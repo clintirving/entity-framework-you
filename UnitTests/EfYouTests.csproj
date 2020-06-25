@@ -77,7 +77,6 @@
     <Compile Include="EntityServices\EntityServiceOfTTests.cs" />
     <Compile Include="FakePrincipal.cs" />
     <Compile Include="Filters\FilterServiceOfTTests.cs" />
-    <Compile Include="PermissionServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScopeOfResponsibility\ScopeOfResponsibilityServiceTests.cs" />
     <Compile Include="Utilities\AnonymousClassServiceTests.cs" />
