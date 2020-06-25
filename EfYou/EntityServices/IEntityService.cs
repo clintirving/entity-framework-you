@@ -20,10 +20,16 @@ namespace EfYou.EntityServices
         T GetFirst(List<long> ids);
         T GetFirst(List<long> ids, List<string> includes);
         T GetFirst(List<long> ids, List<string> includes, List<OrderBy> orderBys);
+        T GetLast(List<long> ids);
+        T GetLast(List<long> ids, List<string> includes);
+        T GetLast(List<long> ids, List<string> includes, List<OrderBy> orderBys);
         List<T> Search(List<T> filters);
         List<T> Search(List<T> filters, List<string> includes);
         List<T> Search(List<T> filters, List<string> includes, List<OrderBy> orderBys);
         List<T> Search(List<T> filters, List<string> includes, List<OrderBy> orderBys, Paging paging);
+        T SearchLast(List<T> filters);
+        T SearchLast(List<T> filters, List<string> includes);
+        T SearchLast(List<T> filters, List<string> includes, List<OrderBy> orderBys);
         T SearchFirst(List<T> filters);
         T SearchFirst(List<T> filters, List<string> includes);
         T SearchFirst(List<T> filters, List<string> includes, List<OrderBy> orderBys);
