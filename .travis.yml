@@ -1,8 +1,11 @@
 language: csharp
 mono: none
-solution: entity-framework-you.sln
-mono:
-  - latest
-script:
-  - dotnet restore
-  - dotnet test
+solution: EfYouCore\EfYouCore.sln
+dotnet: 3.1
+
+before_script: 
+- dotnet restore ".\EfYouCore\EfYouCore.sln" 
+
+script: 
+- dotnet build ".\EfYouCore\EfYouCore.sln" -c Release 
+- dotnet test ".\EfYouCore\EfYouCore.sln" -c Release -v n
