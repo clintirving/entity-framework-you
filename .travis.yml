@@ -1,0 +1,8 @@
+language: csharp
+mono: none
+solution: entity-framework-you.sln
+mono:
+  - latest
+script:
+  - dotnet restore
+  - dotnet test
