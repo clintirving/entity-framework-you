@@ -208,6 +208,58 @@ namespace EfYouTests.EntityServices
         }
 
         [TestMethod]
+        public void GetLast_TwoDummyEntitiesExist__ReturnsFirstFromFilteredContextDataSet()
+        {
+            // Arrange
+            SetMockData(new List<DummyEntity> { new DummyEntity { Id = 1 }, new DummyEntity { Id = 2 } });
+
+            // Act
+            var result = _entityService.GetLast(new List<long> { 1, 2 });
+
+            // Assert
+            Assert.AreEqual(2, result.Id);
+        }
+
+        [TestMethod]
+        public void GetLast_OneDummyEntityExists__ReturnsFirstFromFilteredContextDataSet()
+        {
+            // Arrange
+            SetMockData(new List<DummyEntity> { new DummyEntity { Id = 1 } });
+
+            // Act
+            var result = _entityService.GetLast(new List<long> { 1 });
+
+            // Assert
+            Assert.AreEqual(1, result.Id);
+        }
+
+        [TestMethod]
+        public void GetLast_Includes_CallsAddIncludesOnFilterServiceWithIncludes()
+        {
+            // Arrange
+            var includes = new List<string>();
+
+            // Act
+            _entityService.GetLast(new List<long> { 1 }, includes);
+
+            // Assert
+            _filterService.Verify(x => x.AddIncludes(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<string>>(y => y == includes)));
+        }
+
+        [TestMethod]
+        public void GetLast_OrderBys_CallsAddOrderBysOnFilterServiceWithOrderBys()
+        {
+            // Arrange
+            var orderBys = new List<OrderBy>();
+
+            // Act
+            _entityService.GetFirst(new List<long> { 1 }, null, orderBys);
+
+            // Assert
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys)));
+        }
+
+        [TestMethod]
         public void GetFirst_ReturnsFirstFromFilteredContextDataSet()
         {
             // Arrange
@@ -394,6 +446,58 @@ namespace EfYouTests.EntityServices
 
             // Assert
             Assert.AreEqual(2, results.Count);
+        }
+
+        [TestMethod]
+        public void SearchLast_TwoDummyEntitiesExist_ReturnsLastFromFilteredContextDataSet()
+        {
+            // Arrange
+            SetMockData(new List<DummyEntity> { new DummyEntity { Id = 1 }, new DummyEntity { Id = 2 } });
+
+            // Act
+            var result = _entityService.SearchLast(new List<DummyEntity> { new DummyEntity() });
+
+            // Assert
+            Assert.AreEqual(2, result.Id);
+        }
+
+        [TestMethod]
+        public void SearchLast_OneDummyEntityExists_ReturnsLastFromFilteredContextDataSet()
+        {
+            // Arrange
+            SetMockData(new List<DummyEntity> { new DummyEntity { Id = 1 } });
+
+            // Act
+            var result = _entityService.SearchLast(new List<DummyEntity> { new DummyEntity() });
+
+            // Assert
+            Assert.AreEqual(1, result.Id);
+        }
+
+        [TestMethod]
+        public void SearchLast_Includes_CallsAddIncludesOnFilterServiceWithIncludes()
+        {
+            // Arrange
+            var includes = new List<string>();
+
+            // Act
+            _entityService.SearchLast(new List<DummyEntity> { new DummyEntity() }, includes);
+
+            // Assert
+            _filterService.Verify(x => x.AddIncludes(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<string>>(y => y == includes)));
+        }
+
+        [TestMethod]
+        public void SearchLast_OrderBys_CallsAddOrderBysOnFilterServiceWithOrderBys()
+        {
+            // Arrange
+            var orderBys = new List<OrderBy>();
+
+            // Act
+            _entityService.SearchLast(new List<DummyEntity> { new DummyEntity() }, null, orderBys);
+
+            // Assert
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys)));
         }
 
         [TestMethod]

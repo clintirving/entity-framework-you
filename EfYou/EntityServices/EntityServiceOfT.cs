@@ -27,9 +27,13 @@ namespace EfYou.EntityServices
         private readonly IContextFactory _contextFactory;
         private readonly IFilterService<T> _filterService;
         private readonly IPermissionService<T> _permissionService;
-        private readonly IScopeOfResponsibilityService<T> _scopeOfResponsibilityService;
-
+        private readonly IScopeOfResponsibilityService<T> _scopeOfResponsibilityService;    
         private readonly Paging _selectTop1 = new Paging {Count = 1, Page = 0};
+        private readonly Paging _selectLast1 = new Paging
+        {
+            Count = 1,
+            Page = 0
+        };
 
         public EntityService(IContextFactory contextFactory, IFilterService<T> filterService,
             ICascadeDeleteService<T> cascadeDeletionService, IPermissionService<T> permissionService,
@@ -55,6 +59,26 @@ namespace EfYou.EntityServices
         public virtual List<T> Get(List<long> ids, List<string> includes, List<OrderBy> orderBys)
         {
             return Get(ids, includes, orderBys, null);
+        }
+
+        public T GetLast(List<long> ids)
+        {
+            return GetLast(ids, null, null);
+        }
+
+        public T GetLast(List<long> ids, List<string> includes)
+        {
+            return GetLast(ids, includes, null);
+        }
+
+        public T GetLast(List<long> ids, List<string> includes, List<OrderBy> orderBys)
+        {
+            var count = SearchCount(ids.OfType<T>().ToList());
+            if (count > 1)
+            {
+                _selectLast1.Page = (int)count - 1;
+            }
+            return Get(ids, includes, orderBys, _selectTop1).LastOrDefault();
         }
 
         public T GetFirst(List<long> ids)
@@ -163,6 +187,25 @@ namespace EfYou.EntityServices
             return new List<List<long>>();
         }
 
+        public virtual T SearchLast(List<T> filters)
+        {
+            return SearchLast(filters, null, null);
+        }
+
+        public virtual T SearchLast(List<T> filters, List<string> includes)
+        {
+            return SearchLast(filters, includes, null);
+        }
+
+        public virtual T SearchLast(List<T> filters, List<string> includes, List<OrderBy> orderBys)
+        {
+            var count = SearchCount(filters);
+            if (count > 1)
+            {
+                _selectLast1.Page = (int)count - 1;
+            }
+            return Search(filters, includes, orderBys, _selectLast1).LastOrDefault();
+        }
 
         public virtual T SearchFirst(List<T> filters)
         {
