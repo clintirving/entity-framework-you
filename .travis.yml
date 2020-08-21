@@ -1,8 +1,9 @@
 language: csharp
-mono: latest
-solution: entity-framework-you.sln
-dotnet: 3.1.200
-script:
+mono: none
+solution: EfYouCore\EfYouCore.sln
+dotnet: 3.1
+install:
   - dotnet restore
-  - msbuild
-  - mono mstest /testcontainer:UnitTests\bin\EfYouTests.dll
+script:
+  - dotnet build
+  - dotnet test EfYouCore/EfYouCoreTests/EfYouCoreTests.csproj
