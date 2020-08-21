@@ -36,8 +36,6 @@ namespace EfYouCoreTests.Filters
             // Act
             filterService.Object.FilterResultsOnGet(queryable, ids);
 
-            throw new Exception("TEST!!!!");
-
             // Assert
             filterService.Verify(x => x.FilterResultsOnIds(queryable, ids));
         }
