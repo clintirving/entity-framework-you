@@ -14,4 +14,4 @@ script:
 - sudo apt-get install dotnet-runtime-2.1
 - dotnet tool install --global coveralls.net --version 1.0.0
 - export PATH="$PATH:/home/travis/.dotnet/tools"
-- csmacnz.Coveralls --opencover -i .\EfYouTests\coverage.opencover.xml --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName travis-ci
+- csmacnz.Coveralls --opencover -i .\\EfYouTests\\coverage.opencover.xml --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName travis-ci
