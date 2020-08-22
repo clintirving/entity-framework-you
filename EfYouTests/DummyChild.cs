@@ -6,6 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using System.ComponentModel.DataAnnotations;
 using EfYouCore.Model.Attributes;
 
 namespace EfYouCoreTests
@@ -18,6 +19,7 @@ namespace EfYouCoreTests
 
         [DefaultValue(Value = "100")] public int? IntWithDefaultValue { get; set; }
 
-        public int Id { get; set; }
+        [Key]
+        public short Id { get; set; }
     }
 }

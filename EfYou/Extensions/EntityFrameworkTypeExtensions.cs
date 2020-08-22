@@ -74,7 +74,7 @@ namespace EfYouCore.Extensions
             if (primaryKeyProperties.Count != 1)
             {
                 throw new ApplicationException(string.Format(
-                    "Primary key for type {0} is not composed of only a single column - GetPrimaryKeyProperty will not work for this entity type",
+                    "Primary key for type {0} must consist of only a single column - GetPrimaryKeyProperty will not work for this entity type",
                     entityType.FullName));
             }
 

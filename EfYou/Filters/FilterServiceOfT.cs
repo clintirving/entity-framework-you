@@ -28,7 +28,14 @@ namespace EfYouCore.Filters
 
         public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<long> ids)
         {
-            query = FilterResultsOnIds(query, ids);
+            query = FilterResultsOnIdsFilter(query, ids);
+
+            return query;
+        }
+
+        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<Guid> ids)
+        {
+            query = FilterResultsOnIdsFilter(query, ids);
 
             return query;
         }
@@ -40,7 +47,7 @@ namespace EfYouCore.Filters
             return query;
         }
 
-        public virtual IQueryable<T> FilterResultsOnIds(IQueryable<T> query, List<long> ids)
+        public virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<long> ids)
         {
             var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
 
@@ -50,17 +57,38 @@ namespace EfYouCore.Filters
 
             var containsQuery = string.Format("{0} in @0", primaryKeyName);
 
+            if (primaryKeyType == typeof(short))
+            {
+                return query.Where(containsQuery, ids.Select(x => (short)x).ToList());
+            }
             if (primaryKeyType == typeof(int))
             {
                 return query.Where(containsQuery, ids.Select(x => (int) x).ToList());
-            }
-
+            } 
             if (primaryKeyType == typeof(long))
             {
                 return query.Where(containsQuery, ids);
             }
+            
+            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");
+        }
 
-            throw new ApplicationException("The primary key of the type is neither an int nor long");
+        public virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<Guid> ids)
+        {
+            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
+
+            var primaryKeyType = primaryKeyProperty.PropertyType;
+
+            var primaryKeyName = primaryKeyProperty.Name;
+
+            var containsQuery = string.Format("{0} in @0", primaryKeyName);
+
+            if (primaryKeyType == typeof(Guid))
+            {
+                return query.Where(containsQuery, ids);
+            }
+
+            throw new ApplicationException("To call this method, Primary Key of type T must be Guid.");
         }
 
         public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes)
