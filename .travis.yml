@@ -9,7 +9,7 @@ before_script:
 script: 
 - dotnet build ".\EfYou.sln" -c Release 
 - dotnet test ".\EfYou.sln" -c Release -v n /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-- sudo apt-get install dotnet-sdk-2.1
+- sudo apt-get install dotnet-runtime-2.1
 - dotnet tool install --global coveralls.net --version 1.0.0
 - export PATH="$PATH:/home/travis/.dotnet/tools"
 - csmacnz.Coveralls --opencover -i /EfYouTests/coverage.opencover.xml --useRelativePaths --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName travis-ci
