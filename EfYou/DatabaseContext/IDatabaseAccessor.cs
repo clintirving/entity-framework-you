@@ -11,7 +11,7 @@ using System.Data.Entity;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EfYou.DatabaseContext
+namespace EfYouCore.DatabaseContext
 {
     public interface IDatabaseAccessor
     {

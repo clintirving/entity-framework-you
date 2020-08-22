@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYou.Model.FilterExtensions
+namespace EfYouCore.Model.FilterExtensions
 {
     public class EnumRange
     {

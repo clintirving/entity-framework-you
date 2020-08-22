@@ -9,7 +9,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EfYou.Model.Attributes
+namespace EfYouCore.Model.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class FilterExtensionsAttribute : NotMappedAttribute

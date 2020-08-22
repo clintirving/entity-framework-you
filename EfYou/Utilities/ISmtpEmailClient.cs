@@ -12,7 +12,7 @@ using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace EfYou.Utilities
+namespace EfYouCore.Utilities
 {
     public interface ISmtpEmailClient : IDisposable
     {

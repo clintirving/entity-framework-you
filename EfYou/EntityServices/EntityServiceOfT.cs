@@ -11,15 +11,15 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
-using EfYou.CascadeDelete;
-using EfYou.DatabaseContext;
-using EfYou.Extensions;
-using EfYou.Filters;
-using EfYou.Permissions;
-using EfYou.ScopeOfResponsibility;
-using EfYou.Utilities;
+using EfYouCore.CascadeDelete;
+using EfYouCore.DatabaseContext;
+using EfYouCore.Extensions;
+using EfYouCore.Filters;
+using EfYouCore.Permissions;
+using EfYouCore.ScopeOfResponsibility;
+using EfYouCore.Utilities;
 
-namespace EfYou.EntityServices
+namespace EfYouCore.EntityServices
 {
     public class EntityService<T> : IEntityService<T> where T : class, new()
     {

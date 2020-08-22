@@ -8,12 +8,12 @@
 
 using System.Data.Entity;
 using Common.Logging;
-using EfYou.DatabaseContext;
-using EfYou.Security.DatabaseContext.Migrations;
-using EfYou.Security.Models;
-using EfYou.Security.User;
+using EfYouCore.DatabaseContext;
+using EfYouCore.Security.DatabaseContext.Migrations;
+using EfYouCore.Security.Models;
+using EfYouCore.Security.User;
 
-namespace EfYou.Security.DatabaseContext
+namespace EfYouCore.Security.DatabaseContext
 {
     public class SecurityDbContext : Context
     {

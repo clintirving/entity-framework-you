@@ -8,7 +8,7 @@
 
 using System.Data.Entity.Migrations;
 
-namespace EfYou.Security.DatabaseContext.Migrations
+namespace EfYouCore.Security.DatabaseContext.Migrations
 {
     internal sealed class Configuration : DbMigrationsConfiguration<SecurityDbContext>
     {

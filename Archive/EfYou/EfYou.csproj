@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1233BC6B-B8F0-4013-ACD8-537EC555601F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>EfYou</RootNamespace>
+    <AssemblyName>EfYou</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\customerdb\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Common.Logging">
+      <HintPath>..\packages\Common.Logging.2.2.0\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core">
+      <HintPath>..\packages\Common.Logging.Core.2.2.0\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Linq.Dynamic">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.3\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CascadeDelete\CascadeDeleteServiceOfT.cs" />
+    <Compile Include="CascadeDelete\ICascadeDeleteServiceOfT.cs" />
+    <Compile Include="DatabaseContext\ForeignKeyNamingConvention.cs" />
+    <Compile Include="DatabaseContext\IContext.cs" />
+    <Compile Include="DatabaseContext\IContextFactory.cs" />
+    <Compile Include="DatabaseContext\Context.cs" />
+    <Compile Include="DatabaseContext\DatabaseAccessor.cs" />
+    <Compile Include="DatabaseContext\IDatabaseAccessor.cs" />
+    <Compile Include="Utilities\SerializationExtensionMethods.cs" />
+    <Compile Include="EntityServices\AuditService.cs" />
+    <Compile Include="EntityServices\EntityServiceOfT.cs" />
+    <Compile Include="EntityServices\IEntityService.cs" />
+    <Compile Include="Extensions\DateTimeExtensions.cs" />
+    <Compile Include="Extensions\EntityFrameworkTypeExtensions.cs" />
+    <Compile Include="Filters\FilterServiceOfT.cs" />
+    <Compile Include="Filters\IFilterServiceOfT.cs" />
+    <Compile Include="Filters\OrderBy.cs" />
+    <Compile Include="Filters\Paging.cs" />
+    <Compile Include="Model\Attributes\DefaultValueAttribute.cs" />
+    <Compile Include="Model\Attributes\FilterExtensionsAttribute.cs" />
+    <Compile Include="Model\Attributes\FilterAttribute.cs" />
+    <Compile Include="Model\Attributes\AuditMeAttribute.cs" />
+    <Compile Include="Model\Enumerations\AuditAction.cs" />
+    <Compile Include="Model\FilterExtensions\CollectionContains.cs" />
+    <Compile Include="Model\FilterExtensions\DateTimeRange.cs" />
+    <Compile Include="Model\FilterExtensions\EnumRange.cs" />
+    <Compile Include="Model\FilterExtensions\NumberRange.cs" />
+    <Compile Include="Model\FilterExtensions\TimeSpanRange.cs" />
+    <Compile Include="Model\Models\Audit.cs" />
+    <Compile Include="Permissions\IPermissionServiceOfT.cs" />
+    <Compile Include="Permissions\PermissionServiceOfT.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScopeOfResponsibility\IScopeOfResponsibilityService.cs" />
+    <Compile Include="ScopeOfResponsibility\ScopeOfResponsibilityService.cs" />
+    <Compile Include="ScopeOfResponsibility\UnrestrictedScopeOfResponsibility.cs" />
+    <Compile Include="Security\DatabaseContext\ISecurityContextFactory.cs" />
+    <Compile Include="Security\DatabaseContext\Migrations\Configuration.cs" />
+    <Compile Include="Security\DatabaseContext\SecurityContextFactory.cs" />
+    <Compile Include="Security\DatabaseContext\SecurityDbContext.cs" />
+    <Compile Include="Security\Models\Login.cs" />
+    <Compile Include="Security\Models\LoginPermission.cs" />
+    <Compile Include="Security\Models\LoginPermissionItem.cs" />
+    <Compile Include="Security\Models\LoginReset.cs" />
+    <Compile Include="Security\User\IIdentityService.cs" />
+    <Compile Include="Utilities\DateTimeProvider.cs" />
+    <Compile Include="Utilities\AnonymousClassService.cs" />
+    <Compile Include="Utilities\EntityExtensions.cs" />
+    <Compile Include="Utilities\ExtensionMethodsProvider.cs" />
+    <Compile Include="Utilities\IDateTimeProvider.cs" />
+    <Compile Include="Utilities\IAnonymousClassService.cs" />
+    <Compile Include="Utilities\ISmtpClientFactory.cs" />
+    <Compile Include="Utilities\ISmtpEmailClient.cs" />
+    <Compile Include="Utilities\SmtpEmailClient.cs" />
+    <Compile Include="Utilities\SmtpClientFactory.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

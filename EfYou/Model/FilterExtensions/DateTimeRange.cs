@@ -8,7 +8,7 @@
 
 using System;
 
-namespace EfYou.Model.FilterExtensions
+namespace EfYouCore.Model.FilterExtensions
 {
     public class DateTimeRange
     {

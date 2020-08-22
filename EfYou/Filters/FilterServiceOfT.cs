@@ -11,15 +11,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using EfYou.Extensions;
-using EfYou.Model.Attributes;
-using EfYou.Model.FilterExtensions;
-using EfYou.Utilities;
+using EfYouCore.Extensions;
+using EfYouCore.Model.Attributes;
+using EfYouCore.Model.FilterExtensions;
+using EfYouCore.Utilities;
 
-namespace EfYou.Filters
+namespace EfYouCore.Filters
 {
     public class FilterService<T> : IFilterService<T> where T : class, new()
     {
@@ -48,7 +48,7 @@ namespace EfYou.Filters
 
             var primaryKeyName = primaryKeyProperty.Name;
 
-            var containsQuery = string.Format("@0.Contains(outerIt.{0})", primaryKeyName);
+            var containsQuery = string.Format("{0} in @0", primaryKeyName);
 
             if (primaryKeyType == typeof(int))
             {
@@ -488,7 +488,7 @@ namespace EfYou.Filters
             var m = Expression.MakeMemberAccess(e, filterProperty);
             var l = Expression.Call(m, typeof(string).GetMethod("ToLower", Type.EmptyTypes));
             var c = Expression.Constant(propertyValue.ToLowerInvariant(), typeof(string));
-            var condition = Expression.Call(l, typeof(string).GetMethod("Contains"), c);
+            var condition = Expression.Call(l, typeof(string).GetMethod("Contains", new Type[] {typeof(string)}), c);
             var lambda = Expression.Lambda<Func<T, bool>>(condition, e);
             query = query.Where(lambda);
             return query;

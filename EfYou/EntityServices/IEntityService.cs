@@ -7,9 +7,9 @@
 // // -----------------------------------------------------------------------
 
 using System.Collections.Generic;
-using EfYou.Filters;
+using EfYouCore.Filters;
 
-namespace EfYou.EntityServices
+namespace EfYouCore.EntityServices
 {
     public interface IEntityService<T> where T : class, new()
     {

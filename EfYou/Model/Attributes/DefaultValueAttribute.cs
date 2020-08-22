@@ -8,7 +8,7 @@
 
 using System;
 
-namespace EfYou.Model.Attributes
+namespace EfYouCore.Model.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class DefaultValueAttribute : Attribute

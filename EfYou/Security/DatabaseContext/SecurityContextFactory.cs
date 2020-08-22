@@ -7,10 +7,10 @@
 // // -----------------------------------------------------------------------
 
 using Common.Logging;
-using EfYou.DatabaseContext;
-using EfYou.Security.User;
+using EfYouCore.DatabaseContext;
+using EfYouCore.Security.User;
 
-namespace EfYou.Security.DatabaseContext
+namespace EfYouCore.Security.DatabaseContext
 {
     public class SecurityContextFactory : ISecurityContextFactory
     {

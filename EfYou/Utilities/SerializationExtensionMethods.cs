@@ -10,7 +10,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace EfYou.Utilities
+namespace EfYouCore.Utilities
 {
     public static class SerializationExtensionMethods
     {

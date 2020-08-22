@@ -8,7 +8,7 @@
 
 using System.Net.Mail;
 
-namespace EfYou.Utilities
+namespace EfYouCore.Utilities
 {
     public class SmtpEmailClient : SmtpClient, ISmtpEmailClient
     {

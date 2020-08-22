@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYou.Security.User
+namespace EfYouCore.Security.User
 {
     public interface IIdentityService
     {

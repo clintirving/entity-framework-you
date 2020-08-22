@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Serialization;
 
-namespace EfYou.Security.Models
+namespace EfYouCore.Security.Models
 {
     public class LoginReset
     {
