@@ -10,7 +10,7 @@ using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
-namespace EfYou.DatabaseContext
+namespace EfYouCore.DatabaseContext
 {
     // Lifted from http://msdn.microsoft.com/en-us/data/dn469439.aspx
     // Provides a convention for fixing the independent association (IA) foreign key column names.  

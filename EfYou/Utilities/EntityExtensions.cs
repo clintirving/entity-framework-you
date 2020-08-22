@@ -11,10 +11,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using EfYou.Extensions;
-using DefaultValueAttribute = EfYou.Model.Attributes.DefaultValueAttribute;
+using EfYouCore.Extensions;
+using DefaultValueAttribute = EfYouCore.Model.Attributes.DefaultValueAttribute;
 
-namespace EfYou.Utilities
+namespace EfYouCore.Utilities
 {
     public static class EntityExtensions
     {

@@ -13,14 +13,14 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using Common.Logging;
-using EfYou.Extensions;
-using EfYou.Model.Attributes;
-using EfYou.Model.Enumerations;
-using EfYou.Model.Models;
-using EfYou.Security.User;
-using EfYou.Utilities;
+using EfYouCore.Extensions;
+using EfYouCore.Model.Attributes;
+using EfYouCore.Model.Enumerations;
+using EfYouCore.Model.Models;
+using EfYouCore.Security.User;
+using EfYouCore.Utilities;
 
-namespace EfYou.DatabaseContext
+namespace EfYouCore.DatabaseContext
 {
     public class Context : DbContext, IContext
     {

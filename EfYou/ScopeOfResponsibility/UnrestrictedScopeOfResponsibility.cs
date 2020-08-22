@@ -8,7 +8,7 @@
 
 using System.Linq;
 
-namespace EfYou.ScopeOfResponsibility
+namespace EfYouCore.ScopeOfResponsibility
 {
     public class UnrestrictedScopeOfResponsibility<T> : IScopeOfResponsibilityService<T> where T : class, new()
     {

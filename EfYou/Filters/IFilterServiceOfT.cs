@@ -9,7 +9,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EfYou.Filters
+namespace EfYouCore.Filters
 {
     public interface IFilterService<T> where T : class, new()
     {

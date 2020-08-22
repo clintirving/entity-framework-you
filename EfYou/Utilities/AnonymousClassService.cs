@@ -12,7 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace EfYou.Utilities
+namespace EfYouCore.Utilities
 {
     public class AnonymousClassService : IAnonymousClassService
     {

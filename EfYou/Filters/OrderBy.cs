@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYou.Filters
+namespace EfYouCore.Filters
 {
     public class OrderBy
     {

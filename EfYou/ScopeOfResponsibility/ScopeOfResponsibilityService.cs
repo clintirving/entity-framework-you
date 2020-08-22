@@ -10,15 +10,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System.Security;
 using Common.Logging;
-using EfYou.Extensions;
-using EfYou.Security.DatabaseContext;
-using EfYou.Security.Models;
-using EfYou.Security.User;
+using EfYouCore.Extensions;
+using EfYouCore.Security.DatabaseContext;
+using EfYouCore.Security.Models;
+using EfYouCore.Security.User;
 
-namespace EfYou.ScopeOfResponsibility
+namespace EfYouCore.ScopeOfResponsibility
 {
     public abstract class ScopeOfResponsibilityService<T> : IScopeOfResponsibilityService<T> where T : class, new()
     {
@@ -53,7 +53,7 @@ namespace EfYou.ScopeOfResponsibility
                             primaryKeyProperty.PropertyType));
                 }
 
-                return query.Where(string.Format("@0.Contains(outerIt.{0})", primaryKeyProperty.Name), restrictedToIds);
+                return query.Where(string.Format("{0} in @0", primaryKeyProperty.Name), restrictedToIds);
             }
 
             return query;

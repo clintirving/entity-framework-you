@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYou.Utilities
+namespace EfYouCore.Utilities
 {
     public class SmtpClientFactory : ISmtpClientFactory
     {
