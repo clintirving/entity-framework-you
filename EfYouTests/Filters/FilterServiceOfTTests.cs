@@ -91,41 +91,7 @@ namespace EfYouCoreTests.Filters
             // Assert
             // By Exception
         }
-
-        [TestMethod]
-        public void FilterResultsOnGet_PrimaryKeyOfTypeIsGuid_ReturnsQueryableFilteredByGuidIds()
-        {
-            // Arrange
-            var filterService = new Mock<FilterService<DummyEntityWithGuidId>> { CallBase = true };
-
-            var id = Guid.NewGuid();
-
-            var queryable = new List<DummyEntityWithGuidId> { new DummyEntityWithGuidId { Id = id }, new DummyEntityWithGuidId { Id = Guid.NewGuid() }, new DummyEntityWithGuidId { Id = Guid.NewGuid() } }.AsQueryable();
-
-            // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<Guid> { id });
-
-            // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
-            Assert.AreEqual(id, results.Single().Id); // The single result should have Id equal to the guid we're testing with.
-        }
-
-        [ExpectedException(typeof(ApplicationException))]
-        [TestMethod]
-        public void FilterResultsOnGet_PrimaryKeyOfTypeIsNotGuid_ThrowsApplicationException()
-        {
-            // Arrange
-            var filterService = new Mock<FilterService<DummyEntityWithInvalidIdType>> { CallBase = true };
-
-            var queryable = new List<DummyEntityWithInvalidIdType> { new DummyEntityWithInvalidIdType { Id = true }, new DummyEntityWithInvalidIdType { Id = false }, new DummyEntityWithInvalidIdType { Id = false } }.AsQueryable();
-
-            // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<Guid> { Guid.NewGuid() });
-
-            // Assert
-            // By Exception
-        }
-
+        
         [TestMethod]
         public void FilterResultsOnSearch_CallsFilterResultsOnSearchFilter()
         {

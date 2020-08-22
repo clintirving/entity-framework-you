@@ -32,14 +32,7 @@ namespace EfYouCore.Filters
 
             return query;
         }
-
-        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<Guid> ids)
-        {
-            query = FilterResultsOnIdsFilter(query, ids);
-
-            return query;
-        }
-
+        
         public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter)
         {
             query = FilterResultsOnSearchFilter(query, filter);
@@ -71,24 +64,6 @@ namespace EfYouCore.Filters
             }
             
             throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");
-        }
-
-        public virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<Guid> ids)
-        {
-            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
-
-            var primaryKeyType = primaryKeyProperty.PropertyType;
-
-            var primaryKeyName = primaryKeyProperty.Name;
-
-            var containsQuery = string.Format("{0} in @0", primaryKeyName);
-
-            if (primaryKeyType == typeof(Guid))
-            {
-                return query.Where(containsQuery, ids);
-            }
-
-            throw new ApplicationException("To call this method, Primary Key of type T must be Guid.");
         }
 
         public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes)

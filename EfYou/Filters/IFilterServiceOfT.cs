@@ -16,7 +16,6 @@ namespace EfYouCore.Filters
     {
         IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter);
         IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<long> ids);
-        IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<Guid> ids);
         IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes);
         IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys);
         IQueryable<T> AddPaging(IQueryable<T> query, Paging paging);
