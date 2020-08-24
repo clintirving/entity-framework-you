@@ -6,10 +6,10 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-using EfYouCore.Model.Attributes;
-using EfYouCore.Model.FilterExtensions;
+using EfYou.Model.Attributes;
+using EfYou.Model.FilterExtensions;
 
-namespace EfYouCoreTests
+namespace EfYouTests
 {
     public class DummyFilterExtensions
     {

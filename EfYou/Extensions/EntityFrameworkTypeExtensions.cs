@@ -15,9 +15,9 @@ using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
-using EfYouCore.DatabaseContext;
+using EfYou.DatabaseContext;
 
-namespace EfYouCore.Extensions
+namespace EfYou.Extensions
 {
     public static class EntityFrameworkTypeExtensions
     {

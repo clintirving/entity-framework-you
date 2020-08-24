@@ -8,16 +8,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Net.Mime;
-using System.Runtime.CompilerServices;
-using EfYouCore.Filters;
-using EfYouCore.Model.FilterExtensions;
-using EfYouTests;
+using EfYou.Filters;
+using EfYou.Model.FilterExtensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace EfYouCoreTests.Filters
+namespace EfYouTests.Filters
 {
     [TestClass]
     public class FilterServiceTests
@@ -91,38 +90,59 @@ namespace EfYouCoreTests.Filters
             // Assert
             // By Exception
         }
-        
+
         [TestMethod]
-        public void FilterResultsOnSearch_CallsFilterResultsOnSearchFilter()
+        public void FilterResultsOnSearch_CallsAutoSearchFilter()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
-            var queryable = new List<DummyEntity>().AsQueryable();
+
+            var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
+
             var filter = new DummyEntity();
 
             // Act
             filterService.Object.FilterResultsOnSearch(queryable, filter);
 
             // Assert
-            filterService.Verify(x => x.FilterResultsOnSearchFilter(queryable, filter));
+            filterService.Verify(x => x.AutoFilter(queryable, filter), Times.Once);
         }
 
         [TestMethod]
-        public void FilterResultsOnSearch_ReturnsQueryableFilteredBySearchFilter()
+        public void AddIncludes_SingleInclude_CallsIncludeOnTheQueryableWithTheSingleInclude()
         {
             // Arrange
-            var filterService = GetFilterServiceMock();
-            filterService.Setup(x => x.FilterResultsOnSearchFilter(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<DummyEntity>()))
-                .Returns<IQueryable<DummyEntity>, DummyEntity>((x, y) => x.Where(z => z.Id == 2));
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
 
-            var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
+            var mockDbSet = new Mock<DbSet<DummyParent>>();
+
+            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
+                .Returns<string>(x => mockDbSet.Object);
 
             // Act
-            var results = filterService.Object.FilterResultsOnSearch(queryable, new DummyEntity());
+            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity" });
 
             // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on current principal and filter on ids.
-            Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
+            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
+        }
+
+        [TestMethod]
+        public void AddIncludes_TwoIncludes_CallsIncludeOnTheQueryableWithBothIncludes()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
+
+            var mockDbSet = new Mock<DbSet<DummyParent>>();
+
+            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
+                .Returns<string>(x => mockDbSet.Object);
+
+            // Act
+            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
+
+            // Assert
+            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
+            mockDbSet.Verify(mock => mock.Include("DummyEntity.DummyChild"), Times.Once);
         }
 
         [TestMethod]

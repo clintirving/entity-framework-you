@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace EfYouCore.CascadeDelete
+namespace EfYou.CascadeDelete
 {
     public interface ICascadeDeleteService<T> where T : class, new()
     {

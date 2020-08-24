@@ -13,12 +13,12 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Security;
 using Common.Logging;
-using EfYouCore.Extensions;
-using EfYouCore.Security.DatabaseContext;
-using EfYouCore.Security.Models;
-using EfYouCore.Security.User;
+using EfYou.Extensions;
+using EfYou.Security.DatabaseContext;
+using EfYou.Security.Models;
+using EfYou.Security.User;
 
-namespace EfYouCore.ScopeOfResponsibility
+namespace EfYou.ScopeOfResponsibility
 {
     public abstract class ScopeOfResponsibilityService<T> : IScopeOfResponsibilityService<T> where T : class, new()
     {

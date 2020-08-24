@@ -8,7 +8,7 @@
 
 using System.Collections.ObjectModel;
 
-namespace EfYouCore.Model.FilterExtensions
+namespace EfYou.Model.FilterExtensions
 {
     public class CollectionContains<T> : Collection<T>
     {

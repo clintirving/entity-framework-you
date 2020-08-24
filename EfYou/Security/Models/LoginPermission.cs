@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 
-namespace EfYouCore.Security.Models
+namespace EfYou.Security.Models
 {
     public class LoginPermission
     {

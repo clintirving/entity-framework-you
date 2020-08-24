@@ -6,11 +6,10 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EfYouCore.Filters
+namespace EfYou.Filters
 {
     public interface IFilterService<T> where T : class, new()
     {

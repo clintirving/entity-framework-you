@@ -12,15 +12,15 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Security;
 using Common.Logging;
-using EfYouCore.DatabaseContext;
-using EfYouCore.ScopeOfResponsibility;
-using EfYouCore.Security.DatabaseContext;
-using EfYouCore.Security.Models;
-using EfYouCore.Security.User;
+using EfYou.DatabaseContext;
+using EfYou.ScopeOfResponsibility;
+using EfYou.Security.DatabaseContext;
+using EfYou.Security.Models;
+using EfYou.Security.User;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace EfYouCoreTests.ScopeOfResponsibility
+namespace EfYouTests.ScopeOfResponsibility
 {
     [TestClass]
     public class ScopeOfResponsibilityServiceTests

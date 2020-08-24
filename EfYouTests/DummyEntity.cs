@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EfYouCore.Model.Attributes;
+using EfYou.Model.Attributes;
 
-namespace EfYouCoreTests
+namespace EfYouTests
 {
     public enum Choices
     {

@@ -10,16 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using EfYouCore.CascadeDelete;
-using EfYouCore.DatabaseContext;
-using EfYouCore.EntityServices;
-using EfYouCore.Filters;
-using EfYouCore.Permissions;
-using EfYouCore.ScopeOfResponsibility;
+using EfYou.CascadeDelete;
+using EfYou.DatabaseContext;
+using EfYou.EntityServices;
+using EfYou.Filters;
+using EfYou.Permissions;
+using EfYou.ScopeOfResponsibility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace EfYouCoreTests.EntityServices
+namespace EfYouTests.EntityServices
 {
     [TestClass]
     public class EntityServiceOfTTests

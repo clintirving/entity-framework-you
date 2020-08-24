@@ -8,7 +8,7 @@
 
 using System.Linq;
 
-namespace EfYouCore.ScopeOfResponsibility
+namespace EfYou.ScopeOfResponsibility
 {
     public interface IScopeOfResponsibilityService<T> where T : class, new()
     {

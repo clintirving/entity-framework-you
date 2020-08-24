@@ -7,9 +7,9 @@
 // // -----------------------------------------------------------------------
 
 using System.ComponentModel.DataAnnotations;
-using EfYouCore.Model.Attributes;
+using EfYou.Model.Attributes;
 
-namespace EfYouCoreTests
+namespace EfYouTests
 {
     public class DummyChild
     {

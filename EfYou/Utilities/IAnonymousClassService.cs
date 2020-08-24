@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace EfYouCore.Utilities
+namespace EfYou.Utilities
 {
     public interface IAnonymousClassService
     {

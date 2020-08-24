@@ -8,14 +8,14 @@
 
 using System;
 using System.Collections.Generic;
-using EfYouCore.CascadeDelete;
-using EfYouCore.DatabaseContext;
-using EfYouCore.Filters;
-using EfYouCore.Model.Models;
-using EfYouCore.Permissions;
-using EfYouCore.ScopeOfResponsibility;
+using EfYou.CascadeDelete;
+using EfYou.DatabaseContext;
+using EfYou.Filters;
+using EfYou.Model.Models;
+using EfYou.Permissions;
+using EfYou.ScopeOfResponsibility;
 
-namespace EfYouCore.EntityServices
+namespace EfYou.EntityServices
 {
     public class AuditService : EntityService<Audit>
     {

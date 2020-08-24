@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Serialization;
-using EfYouCore.Model.Attributes;
+using EfYou.Model.Attributes;
 
-namespace EfYouCore.Security.Models
+namespace EfYou.Security.Models
 {
     [AuditMe]
     public class Login

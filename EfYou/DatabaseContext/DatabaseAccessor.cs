@@ -11,7 +11,7 @@ using System.Data.Entity;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EfYouCore.DatabaseContext
+namespace EfYou.DatabaseContext
 {
     /// <summary>
     ///     Class to be used for direct access to the underlying DB.

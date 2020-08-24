@@ -14,12 +14,12 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
-using EfYouCore.Extensions;
-using EfYouCore.Model.Attributes;
-using EfYouCore.Model.FilterExtensions;
-using EfYouCore.Utilities;
+using EfYou.Extensions;
+using EfYou.Model.Attributes;
+using EfYou.Model.FilterExtensions;
+using EfYou.Utilities;
 
-namespace EfYouCore.Filters
+namespace EfYou.Filters
 {
     public class FilterService<T> : IFilterService<T> where T : class, new()
     {
@@ -28,49 +28,25 @@ namespace EfYouCore.Filters
 
         public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<long> ids)
         {
-            query = FilterResultsOnIdsFilter(query, ids);
-
-            return query;
+            return FilterResultsOnIdsFilter(query, ids);
         }
         
         public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter)
         {
-            query = FilterResultsOnSearchFilter(query, filter);
-
-            return query;
-        }
-
-        public virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<long> ids)
-        {
-            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
-
-            var primaryKeyType = primaryKeyProperty.PropertyType;
-
-            var primaryKeyName = primaryKeyProperty.Name;
-
-            var containsQuery = string.Format("{0} in @0", primaryKeyName);
-
-            if (primaryKeyType == typeof(short))
-            {
-                return query.Where(containsQuery, ids.Select(x => (short)x).ToList());
-            }
-            if (primaryKeyType == typeof(int))
-            {
-                return query.Where(containsQuery, ids.Select(x => (int) x).ToList());
-            } 
-            if (primaryKeyType == typeof(long))
-            {
-                return query.Where(containsQuery, ids);
-            }
-            
-            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");
+            return AutoFilter(query, filter);
         }
 
         public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes)
         {
             if (includes != null)
             {
-                return includes.Aggregate(query, (current, include) => current.Include(include));
+                IQueryable<T> result = query;
+                foreach (var include in includes)
+                {
+                    result = result.Include(include);
+                }
+
+                return result;
             }
 
             return query;
@@ -122,6 +98,32 @@ namespace EfYouCore.Filters
             var pagedQuery = AddPaging(orderedQuery, paging);
 
             return pagedQuery;
+        }
+
+        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<long> ids)
+        {
+            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
+
+            var primaryKeyType = primaryKeyProperty.PropertyType;
+
+            var primaryKeyName = primaryKeyProperty.Name;
+
+            var containsQuery = string.Format("{0} in @0", primaryKeyName);
+
+            if (primaryKeyType == typeof(short))
+            {
+                return query.Where(containsQuery, ids.Select(x => (short)x).ToList());
+            }
+            if (primaryKeyType == typeof(int))
+            {
+                return query.Where(containsQuery, ids.Select(x => (int)x).ToList());
+            }
+            if (primaryKeyType == typeof(long))
+            {
+                return query.Where(containsQuery, ids);
+            }
+
+            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");
         }
 
         private Type CreateAnonymousType(List<string> groupBys)
@@ -176,12 +178,7 @@ namespace EfYouCore.Filters
             return query.OrderBy(x => x.Key);
         }
 
-        public virtual IQueryable<T> FilterResultsOnSearchFilter(IQueryable<T> query, T filter)
-        {
-            return AutoFilter(query, filter);
-        }
-
-        public IQueryable<T> AutoFilter(IQueryable<T> query, T filter)
+        public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter)
         {
             var filterType = filter.GetType();
 
