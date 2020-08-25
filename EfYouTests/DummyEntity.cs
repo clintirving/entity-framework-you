@@ -56,6 +56,8 @@ namespace EfYouTests
 
         public Choices Choices { get; set; }
 
+        public Choices? NullableChoices { get; set; }
+
         public DummyParent DummyParent { get; set; }
 
         public int DummyParentId { get; set; }
@@ -71,7 +73,7 @@ namespace EfYouTests
         [FilterExtensions] public DummyFilterExtensions DummyFilterExtensions { get; set; }
 
         [NotMapped] public string NotMappedProperty { get; set; }
-
+        
         public TimeSpan? TimeOfDay { get; set; }
 
         public int FilterableInt { get; set; }

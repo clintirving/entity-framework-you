@@ -188,7 +188,7 @@ namespace EfYou.Filters
             {
                 var propertyType = filterProperty.PropertyType;
 
-                if (propertyType.IsNumericType())
+                if (propertyType.IsNumericOrEnumType())
                 {
                     query = AddNumericFilterToQuery(query, filter, filterProperty);
                 }
@@ -199,10 +199,6 @@ namespace EfYou.Filters
                 else if (propertyType.IsStringType())
                 {
                     query = AddStringFilterToQuery(query, filter, filterProperty);
-                }
-                else if (propertyType.IsEnumType())
-                {
-                    query = AddEnumFilterToQuery(query, filter, filterProperty);
                 }
                 else if (propertyType.IsNullableType())
                 {
@@ -280,7 +276,7 @@ namespace EfYou.Filters
 
             var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
 
-            if (property.PropertyType.IsNullableNumericType())
+            if (property.PropertyType.IsNullableNumericOrEnumType())
             {
                 query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
                     Convert.ChangeType(range.Min, Nullable.GetUnderlyingType(property.PropertyType)));
@@ -303,7 +299,7 @@ namespace EfYou.Filters
 
             var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
 
-            if (property.PropertyType.IsNullableNumericType())
+            if (property.PropertyType.IsNullableNumericOrEnumType())
             {
                 query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
                     Enum.ToObject(Nullable.GetUnderlyingType(property.PropertyType), range.Min));
@@ -359,17 +355,6 @@ namespace EfYou.Filters
         {
             var propertyValue = filterProperty.GetValue(filter);
             query = ApplyEqualityFilterToQuery(query, filterProperty, propertyValue);
-            return query;
-        }
-
-        private IQueryable<T> AddEnumFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
-        {
-            var propertyValue = (int) filterProperty.GetValue(filter);
-            if (propertyValue != 0)
-            {
-                query = ApplyEqualityFilterToQuery(query, filterProperty, filterProperty.GetValue(filter));
-            }
-
             return query;
         }
 
@@ -509,11 +494,6 @@ namespace EfYou.Filters
 
     public static class FilterServiceExtensions
     {
-        public static bool IsEnumType(this Type type)
-        {
-            return type.IsEnum;
-        }
-
         public static bool IsNullableType(this Type type)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -524,11 +504,11 @@ namespace EfYou.Filters
             return false;
         }
 
-        public static bool IsNullableNumericType(this Type type)
+        public static bool IsNullableNumericOrEnumType(this Type type)
         {
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return IsNumericType(Nullable.GetUnderlyingType(type));
+                return IsNumericOrEnumType(Nullable.GetUnderlyingType(type));
             }
 
             return false;
@@ -544,7 +524,7 @@ namespace EfYou.Filters
             return false;
         }
 
-        public static bool IsNumericType(this Type type)
+        public static bool IsNumericOrEnumType(this Type type)
         {
             switch (Type.GetTypeCode(type))
             {

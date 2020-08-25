@@ -565,6 +565,42 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
+        public void AutoFilter_NullableEnumPropertySetToValue_FilterOnPropertyEqualsValue()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, NullableChoices = Choices.Wisely}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false, NullableChoices = Choices.Poorly},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { NullableChoices = Choices.Wisely });
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+        [TestMethod]
+        public void AutoFilter_NullableEnumPropertySetToNull_NoFilterAppliedForProperty()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, NullableChoices = Choices.Wisely}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false, NullableChoices = Choices.Poorly},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { NullableChoices = null });
+
+            // Assert
+            Assert.AreEqual(3, results.Count());
+        }
+
+        [TestMethod]
         public void AutoFilter_VirtualPropertiesOnFilterAreIgnored()
         {
             // Arrange
@@ -807,7 +843,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {TimeOfDayRange = new TimeSpanRange {Min = TimeSpan.FromHours(2)}}
+                    DummyFilterExtensions = new DummyFilterExtensions { TimeOfDayRange = new TimeSpanRange { Min = TimeSpan.FromHours(2) } }
                 });
 
             // Assert
@@ -827,7 +863,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {TimeOfDayRange = new TimeSpanRange {Max = TimeSpan.FromHours(2)}}
+                    DummyFilterExtensions = new DummyFilterExtensions { TimeOfDayRange = new TimeSpanRange { Max = TimeSpan.FromHours(2) } }
                 });
 
             // Assert
@@ -848,27 +884,26 @@ namespace EfYouTests.Filters
                 new DummyEntity
                 {
                     DummyFilterExtensions = new DummyFilterExtensions
-                        {TimeOfDayRange = new TimeSpanRange {Min = TimeSpan.FromHours(1), Max = TimeSpan.FromHours(2)}}
+                    { TimeOfDayRange = new TimeSpanRange { Min = TimeSpan.FromHours(1), Max = TimeSpan.FromHours(2) } }
                 });
 
             // Assert
             Assert.AreEqual(TimeSpan.FromHours(1), results.Single().TimeOfDay);
         }
 
-
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsCollectionContainsForIntProperty_CollectionContainsFilterApplied()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
-            var queryable = new List<DummyEntity> {new DummyEntity {Id = 5, FilterableInt = 7}, new DummyEntity {Id = 6, FilterableInt = 9}}
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5, FilterableInt = 7 }, new DummyEntity { Id = 6, FilterableInt = 9 } }
                 .AsQueryable();
 
             // Act
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {FilterableInts = new CollectionContains<int> {9}}
+                    DummyFilterExtensions = new DummyFilterExtensions { FilterableInts = new CollectionContains<int> { 9 } }
                 });
 
             // Assert
