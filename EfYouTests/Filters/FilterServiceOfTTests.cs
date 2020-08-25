@@ -146,6 +146,81 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
+        public void AddIncludes_IncludesIsNull_DoesNotCallIncludeOnTheQueryable()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
+
+            var mockDbSet = new Mock<DbSet<DummyParent>>();
+
+            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
+                .Returns<string>(x => mockDbSet.Object);
+
+            // Act
+            filterService.Object.AddIncludes(mockDbSet.Object, null);
+
+            // Assert
+            mockDbSet.Verify(mock => mock.Include(It.IsAny<string>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void AddPaging_Count1Page0_ReturnsFirstElementOnly()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 });
+
+            // Assert
+            Assert.AreEqual(5, result.Single().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_TotalOf3ElementsInListWithPagingCount2Page1_ReturnsOnlyTheThirdElement()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 });
+
+            // Assert
+            Assert.AreEqual(4, result.Single().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_PagingCount2Page0_ReturnsOnlyTheFirstTwoElements()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 });
+
+            // Assert
+            Assert.AreEqual(5, result.First().Id);
+            Assert.AreEqual(3, result.Last().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_PagingIsNull_ReturnsAllRecords()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, null);
+
+            // Assert
+            Assert.AreEqual(queryable.Count(), result.Count());
+        }
+
+        [TestMethod]
         public void AddOrderBys_EmptyListOfOrderBys_ReturnsQueryableOrderedById()
         {
             // Arrange
