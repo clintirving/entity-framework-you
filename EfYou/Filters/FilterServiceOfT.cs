@@ -237,10 +237,6 @@ namespace EfYou.Filters
                         {
                             query = AddNumberRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
-                        else if (filterExtensionProperty.PropertyType == typeof(EnumRange))
-                        {
-                            query = AddEnumRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
-                        }
                         else if (filterExtensionProperty.PropertyType == typeof(TimeSpanRange))
                         {
                             query = AddTimeSpanRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
@@ -276,40 +272,41 @@ namespace EfYou.Filters
 
             var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
 
-            if (property.PropertyType.IsNullableNumericOrEnumType())
+            var propertyType = property.PropertyType;
+
+            if (propertyType.IsNullableNumericOrEnumType())
             {
-                query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
-                    Convert.ChangeType(range.Min, Nullable.GetUnderlyingType(property.PropertyType)));
-                query = ApplyLessThanOrEqualFilterToQuery(query, property,
-                    Convert.ChangeType(range.Max, Nullable.GetUnderlyingType(property.PropertyType)));
+                var underlyingPropertyType = Nullable.GetUnderlyingType(property.PropertyType);
+
+                if (underlyingPropertyType.IsEnum)
+                {
+                    query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
+                        Enum.ToObject(underlyingPropertyType, Convert.ToInt32(Math.Max(range.Min, int.MinValue))));
+                    query = ApplyLessThanOrEqualFilterToQuery(query, property,
+                        Enum.ToObject(underlyingPropertyType, Convert.ToInt32(Math.Min(range.Max, int.MaxValue))));
+                }
+                else
+                {
+                    query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
+                        Convert.ChangeType(range.Min, underlyingPropertyType));
+                    query = ApplyLessThanOrEqualFilterToQuery(query, property,
+                        Convert.ChangeType(range.Max, underlyingPropertyType));
+                }
             }
             else
             {
-                query = ApplyGreaterThanOrEqualFilterToQuery(query, property, Convert.ChangeType(range.Min, property.PropertyType));
-                query = ApplyLessThanOrEqualFilterToQuery(query, property, Convert.ChangeType(range.Max, property.PropertyType));
-            }
-
-            return query;
-        }
-
-        private IQueryable<T> AddEnumRangeToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
-            FilterExtensionsAttribute filterExtensionAttribute)
-        {
-            var range = (EnumRange) currentFilterProperty;
-
-            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
-
-            if (property.PropertyType.IsNullableNumericOrEnumType())
-            {
-                query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
-                    Enum.ToObject(Nullable.GetUnderlyingType(property.PropertyType), range.Min));
-                query = ApplyLessThanOrEqualFilterToQuery(query, property,
-                    Enum.ToObject(Nullable.GetUnderlyingType(property.PropertyType), range.Min));
-            }
-            else
-            {
-                query = ApplyGreaterThanOrEqualFilterToQuery(query, property, Enum.ToObject(property.PropertyType, range.Min));
-                query = ApplyLessThanOrEqualFilterToQuery(query, property, Enum.ToObject(property.PropertyType, range.Max));
+                if (propertyType.IsEnum)
+                {
+                    query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
+                        Enum.ToObject(propertyType, Convert.ToInt32(Math.Max(range.Min, int.MinValue))));
+                    query = ApplyLessThanOrEqualFilterToQuery(query, property,
+                        Enum.ToObject(propertyType, Convert.ToInt32(Math.Min(range.Max, int.MaxValue))));
+                }
+                else
+                {
+                    query = ApplyGreaterThanOrEqualFilterToQuery(query, property, Convert.ChangeType(range.Min, propertyType));
+                    query = ApplyLessThanOrEqualFilterToQuery(query, property, Convert.ChangeType(range.Max, propertyType));
+                }
             }
 
             return query;
@@ -324,15 +321,14 @@ namespace EfYou.Filters
 
             if (property.PropertyType.IsNullableType())
             {
+                // Only do this for nullable TimeSpan types. There's no "nice" way to represent a TimeSpan
+                // as a don't care condition without it being nullable, so even if we had a range filter property
+                // it would just use the exact value property in the filter every time anyway.
+
                 query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
                     Convert.ChangeType(range.Min, Nullable.GetUnderlyingType(property.PropertyType)));
                 query = ApplyLessThanOrEqualFilterToQuery(query, property,
                     Convert.ChangeType(range.Max, Nullable.GetUnderlyingType(property.PropertyType)));
-            }
-            else
-            {
-                query = ApplyGreaterThanOrEqualFilterToQuery(query, property, Convert.ChangeType(range.Min, property.PropertyType));
-                query = ApplyLessThanOrEqualFilterToQuery(query, property, Convert.ChangeType(range.Max, property.PropertyType));
             }
 
             return query;
@@ -345,8 +341,18 @@ namespace EfYou.Filters
 
             var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
 
-            query = ApplyGreaterThanOrEqualFilterToQuery(query, property, dateTimeRange.After);
-            query = ApplyLessThanOrEqualFilterToQuery(query, property, dateTimeRange.Before);
+            if (property.PropertyType.IsNullableType())
+            {
+                query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
+                    Convert.ChangeType(dateTimeRange.After, Nullable.GetUnderlyingType(property.PropertyType)));
+                query = ApplyLessThanOrEqualFilterToQuery(query, property,
+                    Convert.ChangeType(dateTimeRange.Before, Nullable.GetUnderlyingType(property.PropertyType)));
+            }
+            else
+            {
+                query = ApplyGreaterThanOrEqualFilterToQuery(query, property, dateTimeRange.After);
+                query = ApplyLessThanOrEqualFilterToQuery(query, property, dateTimeRange.Before);
+            }
 
             return query;
         }
@@ -414,10 +420,10 @@ namespace EfYou.Filters
         {
             var e = Expression.Parameter(typeof(T), "e");
             var m = Expression.MakeMemberAccess(e, filterProperty);
-            var c = filterProperty.PropertyType.IsEnum
+            var c = filterProperty.PropertyType.IsEnum || filterProperty.PropertyType.IsNullableType() && Nullable.GetUnderlyingType(filterProperty.PropertyType).IsEnum
                 ? Expression.Constant((int) propertyValue, typeof(int))
                 : Expression.Constant(propertyValue, filterProperty.PropertyType);
-            var b = filterProperty.PropertyType.IsEnum
+            var b = filterProperty.PropertyType.IsEnum || filterProperty.PropertyType.IsNullableType() && Nullable.GetUnderlyingType(filterProperty.PropertyType).IsEnum
                 ? Expression.LessThanOrEqual(Expression.Convert(m, typeof(int)), c)
                 : Expression.LessThanOrEqual(m, c);
 
@@ -430,10 +436,10 @@ namespace EfYou.Filters
         {
             var e = Expression.Parameter(typeof(T), "e");
             var m = Expression.MakeMemberAccess(e, filterProperty);
-            var c = filterProperty.PropertyType.IsEnum
+            var c = filterProperty.PropertyType.IsEnum || filterProperty.PropertyType.IsNullableType() && Nullable.GetUnderlyingType(filterProperty.PropertyType).IsEnum
                 ? Expression.Constant((int) propertyValue, typeof(int))
                 : Expression.Constant(propertyValue, filterProperty.PropertyType);
-            var b = filterProperty.PropertyType.IsEnum
+            var b = filterProperty.PropertyType.IsEnum || filterProperty.PropertyType.IsNullableType() && Nullable.GetUnderlyingType(filterProperty.PropertyType).IsEnum
                 ? Expression.GreaterThanOrEqual(Expression.Convert(m, typeof(int)), c)
                 : Expression.GreaterThanOrEqual(m, c);
 
@@ -513,17 +519,7 @@ namespace EfYou.Filters
 
             return false;
         }
-
-        public static bool IsNullableDateType(this Type type)
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                return IsDateType(Nullable.GetUnderlyingType(type));
-            }
-
-            return false;
-        }
-
+        
         public static bool IsNumericOrEnumType(this Type type)
         {
             switch (Type.GetTypeCode(type))

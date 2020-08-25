@@ -13,6 +13,9 @@ namespace EfYouTests
 {
     public class DummyFilterExtensions
     {
+        [FilterExtensions(AppliedToProperty = "Start")]
+        public DateTimeRange StartRange { get; set; }
+
         [FilterExtensions(AppliedToProperty = "Finish")]
         public DateTimeRange FinishRange { get; set; }
 
@@ -23,7 +26,10 @@ namespace EfYouTests
         public NumberRange IdRange { get; set; }
 
         [FilterExtensions(AppliedToProperty = "Choices")]
-        public EnumRange ChoicesRange { get; set; }
+        public NumberRange ChoicesRange { get; set; }
+
+        [FilterExtensions(AppliedToProperty = "NullableChoices")]
+        public NumberRange NullableChoicesRange { get; set; }
 
         [FilterExtensions(AppliedToProperty = "TimeOfDay")]
         public TimeSpanRange TimeOfDayRange { get; set; }

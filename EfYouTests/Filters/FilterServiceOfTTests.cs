@@ -688,7 +688,7 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AutoFilter_FilterExtensionsContainsDateTimeRangeWithValue_DateTimeRangeFilterApplied()
+        public void AutoFilter_FilterExtensionsContainsNullableDateTimeRangeWithValue_DateTimeRangeFilterApplied()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -701,6 +701,27 @@ namespace EfYouTests.Filters
                 {
                     DummyFilterExtensions = new DummyFilterExtensions
                         {FinishRange = new DateTimeRange {After = DateTime.UtcNow.AddDays(3), Before = DateTime.UtcNow.AddDays(6)}}
+                });
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsDateTimeRangeWithValue_DateTimeRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Start = DateTime.UtcNow }, new DummyEntity { Start = DateTime.UtcNow.AddDays(5) } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                        { StartRange = new DateTimeRange { After = DateTime.UtcNow.AddDays(3), Before = DateTime.UtcNow.AddDays(6) } }
                 });
 
             // Assert
@@ -770,8 +791,7 @@ namespace EfYouTests.Filters
             // Assert
             Assert.AreEqual(1, results.Count());
         }
-
-
+        
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsEnumRangeWithMinValueForEnum_EnumRangeFilterApplied()
         {
@@ -784,7 +804,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new EnumRange {Min = (int) Choices.Poorly}}
+                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new NumberRange {Min = (int) Choices.Poorly}}
                 });
 
             // Assert
@@ -803,7 +823,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new EnumRange {Max = (int) Choices.Wisely}}
+                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new NumberRange {Max = (int) Choices.Wisely}}
                 });
 
             // Assert
@@ -823,12 +843,74 @@ namespace EfYouTests.Filters
                 new DummyEntity
                 {
                     DummyFilterExtensions = new DummyFilterExtensions
-                        {ChoicesRange = new EnumRange {Min = (int) Choices.Wisely, Max = (int) Choices.Wisely}}
+                        {ChoicesRange = new NumberRange {Min = (int) Choices.Wisely, Max = (int) Choices.Wisely}}
                 });
 
             // Assert
             Assert.AreEqual(Choices.Wisely, results.Single().Choices);
         }
+
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEnumRangeWithMinValueForNullableEnum_EnumRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, NullableChoices = Choices.Poorly}, new DummyEntity {Id = 3, NullableChoices = Choices.Wisely}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { NullableChoicesRange = new NumberRange { Min = (int)Choices.Poorly } }
+                });
+
+            // Assert
+            Assert.AreEqual(Choices.Poorly, results.Single().NullableChoices);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEnumRangeWithMaxValueForNullableEnum_EnumRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, NullableChoices = Choices.Poorly}, new DummyEntity {Id = 3, NullableChoices = Choices.Wisely}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { NullableChoicesRange = new NumberRange { Max = (int)Choices.Wisely } }
+                });
+
+            // Assert
+            Assert.AreEqual(Choices.Wisely, results.Single().NullableChoices);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEnumRangeWithMinAndMaxValueForNullableEnum_EnumRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, NullableChoices = Choices.Poorly}, new DummyEntity {Id = 3, NullableChoices = Choices.Wisely}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                    {
+                        NullableChoicesRange = new NumberRange {Min = (int) Choices.Wisely, Max = (int) Choices.Wisely}
+                    }
+                });
+
+            // Assert
+            Assert.AreEqual(Choices.Wisely, results.Single().NullableChoices);
+        }
+
 
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsNullableTimeSpanRangeWithMinValueForTimeSpan_TimeSpanRangeFilterApplied()
