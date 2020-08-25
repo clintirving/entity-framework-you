@@ -8,10 +8,10 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using EfYouCore.Model.Attributes;
-using EfYouCore.Model.Enumerations;
+using EfYou.Model.Attributes;
+using EfYou.Model.Enumerations;
 
-namespace EfYouCore.Model.Models
+namespace EfYou.Model.Models
 {
     public class Audit
     {

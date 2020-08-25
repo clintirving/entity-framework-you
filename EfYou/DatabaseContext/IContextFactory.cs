@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYouCore.DatabaseContext
+namespace EfYou.DatabaseContext
 {
     public interface IContextFactory
     {

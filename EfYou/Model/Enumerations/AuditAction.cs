@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYouCore.Model.Enumerations
+namespace EfYou.Model.Enumerations
 {
     public enum AuditAction
     {

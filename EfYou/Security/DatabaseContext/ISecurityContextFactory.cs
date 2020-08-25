@@ -6,9 +6,9 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-using EfYouCore.DatabaseContext;
+using EfYou.DatabaseContext;
 
-namespace EfYouCore.Security.DatabaseContext
+namespace EfYou.Security.DatabaseContext
 {
     public interface ISecurityContextFactory : IContextFactory
     {

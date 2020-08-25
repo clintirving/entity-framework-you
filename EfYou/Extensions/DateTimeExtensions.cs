@@ -8,7 +8,7 @@
 
 using System;
 
-namespace EfYouCore.Extensions
+namespace EfYou.Extensions
 {
     public static class DateTimeExtensions
     {

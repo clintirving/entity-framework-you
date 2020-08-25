@@ -8,13 +8,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
-using EfYouCore.Filters;
-using EfYouCore.Model.FilterExtensions;
+using EfYou.Filters;
+using EfYou.Model.FilterExtensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
-namespace EfYouCoreTests.Filters
+namespace EfYouTests.Filters
 {
     [TestClass]
     public class FilterServiceTests
@@ -26,27 +28,26 @@ namespace EfYouCoreTests.Filters
         }
 
         [TestMethod]
-        public void FilterResultsOnGet_CallsFilterResultsOnIds()
+        public void FilterResultsOnGet_PrimaryKeyOfTypeIsShort_ReturnsQueryableFilteredByShortIds()
         {
             // Arrange
-            var filterService = GetFilterServiceMock();
-            var queryable = new List<DummyEntity>().AsQueryable();
-            var ids = new List<long>();
+            var filterService = new Mock<FilterService<DummyChild>> { CallBase = true };
+
+            var queryable = new List<DummyChild> { new DummyChild { Id = 1 }, new DummyChild { Id = 2 }, new DummyChild { Id = 3 } }.AsQueryable();
 
             // Act
-            filterService.Object.FilterResultsOnGet(queryable, ids);
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> { 2 });
 
             // Assert
-            filterService.Verify(x => x.FilterResultsOnIds(queryable, ids));
+            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
+            Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
         }
 
         [TestMethod]
-        public void FilterResultsOnGet_PrimaryKeyOfTypeIsInt_ReturnsQueryableFilteredByIds()
+        public void FilterResultsOnGet_PrimaryKeyOfTypeIsInt_ReturnsQueryableFilteredByIntIds()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
-            filterService.Setup(x => x.FilterResultsOnIds(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<long>>()))
-                .Returns<IQueryable<DummyEntity>, List<long>>((x, y) => x.Where(z => z.Id == 2));
 
             var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
 
@@ -59,52 +60,164 @@ namespace EfYouCoreTests.Filters
         }
 
         [TestMethod]
-        public void FilterResultsOnGet_PrimaryKeyOfTypeIsLong_ReturnsQueryableFilteredByIds()
+        public void FilterResultsOnGet_PrimaryKeyOfTypeIsLong_ReturnsQueryableFilteredByLongIds()
         {
             // Arrange
-            var filterService = new Mock<FilterService<DummyParent>> {CallBase = true};
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
 
-            var queryable = new List<DummyParent> {new DummyParent {Id = 1}, new DummyParent {Id = 2}, new DummyParent {Id = 3}}.AsQueryable();
+            var queryable = new List<DummyParent> { new DummyParent { Id = 1 }, new DummyParent { Id = 2 }, new DummyParent { Id = 3 } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> {2});
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> { 2 });
 
             // Assert
             Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
             Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
         }
 
+        [ExpectedException(typeof(ApplicationException))]
         [TestMethod]
-        public void FilterResultsOnSearch_CallsFilterResultsOnSearchFilter()
+        public void FilterResultsOnGet_PrimaryKeyOfTypeIsNoneOfShortOrIntOrLong_ThrowsApplicationException()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyEntityWithInvalidIdType>> { CallBase = true };
+
+            var queryable = new List<DummyEntityWithInvalidIdType> { new DummyEntityWithInvalidIdType { Id = true }, new DummyEntityWithInvalidIdType { Id = false }, new DummyEntityWithInvalidIdType { Id = false } }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> { 2 });
+
+            // Assert
+            // By Exception
+        }
+
+        [TestMethod]
+        public void FilterResultsOnSearch_CallsAutoSearchFilter()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
-            var queryable = new List<DummyEntity>().AsQueryable();
+
+            var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
+
             var filter = new DummyEntity();
 
             // Act
             filterService.Object.FilterResultsOnSearch(queryable, filter);
 
             // Assert
-            filterService.Verify(x => x.FilterResultsOnSearchFilter(queryable, filter));
+            filterService.Verify(x => x.AutoFilter(queryable, filter), Times.Once);
         }
 
         [TestMethod]
-        public void FilterResultsOnSearch_ReturnsQueryableFilteredBySearchFilter()
+        public void AddIncludes_SingleInclude_CallsIncludeOnTheQueryableWithTheSingleInclude()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
+
+            var mockDbSet = new Mock<DbSet<DummyParent>>();
+
+            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
+                .Returns<string>(x => mockDbSet.Object);
+
+            // Act
+            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity" });
+
+            // Assert
+            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
+        }
+
+        [TestMethod]
+        public void AddIncludes_TwoIncludes_CallsIncludeOnTheQueryableWithBothIncludes()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
+
+            var mockDbSet = new Mock<DbSet<DummyParent>>();
+
+            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
+                .Returns<string>(x => mockDbSet.Object);
+
+            // Act
+            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
+
+            // Assert
+            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
+            mockDbSet.Verify(mock => mock.Include("DummyEntity.DummyChild"), Times.Once);
+        }
+
+        [TestMethod]
+        public void AddIncludes_IncludesIsNull_DoesNotCallIncludeOnTheQueryable()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
+
+            var mockDbSet = new Mock<DbSet<DummyParent>>();
+
+            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
+                .Returns<string>(x => mockDbSet.Object);
+
+            // Act
+            filterService.Object.AddIncludes(mockDbSet.Object, null);
+
+            // Assert
+            mockDbSet.Verify(mock => mock.Include(It.IsAny<string>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void AddPaging_Count1Page0_ReturnsFirstElementOnly()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
-            filterService.Setup(x => x.FilterResultsOnSearchFilter(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<DummyEntity>()))
-                .Returns<IQueryable<DummyEntity>, DummyEntity>((x, y) => x.Where(z => z.Id == 2));
-
-            var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnSearch(queryable, new DummyEntity());
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 });
 
             // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on current principal and filter on ids.
-            Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
+            Assert.AreEqual(5, result.Single().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_TotalOf3ElementsInListWithPagingCount2Page1_ReturnsOnlyTheThirdElement()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 });
+
+            // Assert
+            Assert.AreEqual(4, result.Single().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_PagingCount2Page0_ReturnsOnlyTheFirstTwoElements()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 });
+
+            // Assert
+            Assert.AreEqual(5, result.First().Id);
+            Assert.AreEqual(3, result.Last().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_PagingIsNull_ReturnsAllRecords()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, null);
+
+            // Assert
+            Assert.AreEqual(queryable.Count(), result.Count());
         }
 
         [TestMethod]
@@ -452,6 +565,42 @@ namespace EfYouCoreTests.Filters
         }
 
         [TestMethod]
+        public void AutoFilter_NullableEnumPropertySetToValue_FilterOnPropertyEqualsValue()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, NullableChoices = Choices.Wisely}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false, NullableChoices = Choices.Poorly},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { NullableChoices = Choices.Wisely });
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+        [TestMethod]
+        public void AutoFilter_NullableEnumPropertySetToNull_NoFilterAppliedForProperty()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, NullableChoices = Choices.Wisely}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false, NullableChoices = Choices.Poorly},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { NullableChoices = null });
+
+            // Assert
+            Assert.AreEqual(3, results.Count());
+        }
+
+        [TestMethod]
         public void AutoFilter_VirtualPropertiesOnFilterAreIgnored()
         {
             // Arrange
@@ -539,7 +688,7 @@ namespace EfYouCoreTests.Filters
         }
 
         [TestMethod]
-        public void AutoFilter_FilterExtensionsContainsDateTimeRangeWithValue_DateTimeRangeFilterApplied()
+        public void AutoFilter_FilterExtensionsContainsNullableDateTimeRangeWithValue_DateTimeRangeFilterApplied()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -552,6 +701,27 @@ namespace EfYouCoreTests.Filters
                 {
                     DummyFilterExtensions = new DummyFilterExtensions
                         {FinishRange = new DateTimeRange {After = DateTime.UtcNow.AddDays(3), Before = DateTime.UtcNow.AddDays(6)}}
+                });
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsDateTimeRangeWithValue_DateTimeRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Start = DateTime.UtcNow }, new DummyEntity { Start = DateTime.UtcNow.AddDays(5) } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                        { StartRange = new DateTimeRange { After = DateTime.UtcNow.AddDays(3), Before = DateTime.UtcNow.AddDays(6) } }
                 });
 
             // Assert
@@ -621,8 +791,7 @@ namespace EfYouCoreTests.Filters
             // Assert
             Assert.AreEqual(1, results.Count());
         }
-
-
+        
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsEnumRangeWithMinValueForEnum_EnumRangeFilterApplied()
         {
@@ -635,7 +804,7 @@ namespace EfYouCoreTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new EnumRange {Min = (int) Choices.Poorly}}
+                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new NumberRange {Min = (int) Choices.Poorly}}
                 });
 
             // Assert
@@ -654,7 +823,7 @@ namespace EfYouCoreTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new EnumRange {Max = (int) Choices.Wisely}}
+                    DummyFilterExtensions = new DummyFilterExtensions {ChoicesRange = new NumberRange {Max = (int) Choices.Wisely}}
                 });
 
             // Assert
@@ -674,12 +843,74 @@ namespace EfYouCoreTests.Filters
                 new DummyEntity
                 {
                     DummyFilterExtensions = new DummyFilterExtensions
-                        {ChoicesRange = new EnumRange {Min = (int) Choices.Wisely, Max = (int) Choices.Wisely}}
+                        {ChoicesRange = new NumberRange {Min = (int) Choices.Wisely, Max = (int) Choices.Wisely}}
                 });
 
             // Assert
             Assert.AreEqual(Choices.Wisely, results.Single().Choices);
         }
+
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEnumRangeWithMinValueForNullableEnum_EnumRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, NullableChoices = Choices.Poorly}, new DummyEntity {Id = 3, NullableChoices = Choices.Wisely}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { NullableChoicesRange = new NumberRange { Min = (int)Choices.Poorly } }
+                });
+
+            // Assert
+            Assert.AreEqual(Choices.Poorly, results.Single().NullableChoices);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEnumRangeWithMaxValueForNullableEnum_EnumRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, NullableChoices = Choices.Poorly}, new DummyEntity {Id = 3, NullableChoices = Choices.Wisely}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { NullableChoicesRange = new NumberRange { Max = (int)Choices.Wisely } }
+                });
+
+            // Assert
+            Assert.AreEqual(Choices.Wisely, results.Single().NullableChoices);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEnumRangeWithMinAndMaxValueForNullableEnum_EnumRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, NullableChoices = Choices.Poorly}, new DummyEntity {Id = 3, NullableChoices = Choices.Wisely}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                    {
+                        NullableChoicesRange = new NumberRange {Min = (int) Choices.Wisely, Max = (int) Choices.Wisely}
+                    }
+                });
+
+            // Assert
+            Assert.AreEqual(Choices.Wisely, results.Single().NullableChoices);
+        }
+
 
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsNullableTimeSpanRangeWithMinValueForTimeSpan_TimeSpanRangeFilterApplied()
@@ -694,7 +925,7 @@ namespace EfYouCoreTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {TimeOfDayRange = new TimeSpanRange {Min = TimeSpan.FromHours(2)}}
+                    DummyFilterExtensions = new DummyFilterExtensions { TimeOfDayRange = new TimeSpanRange { Min = TimeSpan.FromHours(2) } }
                 });
 
             // Assert
@@ -714,7 +945,7 @@ namespace EfYouCoreTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {TimeOfDayRange = new TimeSpanRange {Max = TimeSpan.FromHours(2)}}
+                    DummyFilterExtensions = new DummyFilterExtensions { TimeOfDayRange = new TimeSpanRange { Max = TimeSpan.FromHours(2) } }
                 });
 
             // Assert
@@ -735,27 +966,26 @@ namespace EfYouCoreTests.Filters
                 new DummyEntity
                 {
                     DummyFilterExtensions = new DummyFilterExtensions
-                        {TimeOfDayRange = new TimeSpanRange {Min = TimeSpan.FromHours(1), Max = TimeSpan.FromHours(2)}}
+                    { TimeOfDayRange = new TimeSpanRange { Min = TimeSpan.FromHours(1), Max = TimeSpan.FromHours(2) } }
                 });
 
             // Assert
             Assert.AreEqual(TimeSpan.FromHours(1), results.Single().TimeOfDay);
         }
 
-
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsCollectionContainsForIntProperty_CollectionContainsFilterApplied()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
-            var queryable = new List<DummyEntity> {new DummyEntity {Id = 5, FilterableInt = 7}, new DummyEntity {Id = 6, FilterableInt = 9}}
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5, FilterableInt = 7 }, new DummyEntity { Id = 6, FilterableInt = 9 } }
                 .AsQueryable();
 
             // Act
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {FilterableInts = new CollectionContains<int> {9}}
+                    DummyFilterExtensions = new DummyFilterExtensions { FilterableInts = new CollectionContains<int> { 9 } }
                 });
 
             // Assert

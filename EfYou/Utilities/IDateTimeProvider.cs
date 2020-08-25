@@ -8,7 +8,7 @@
 
 using System;
 
-namespace EfYouCore.Utilities
+namespace EfYou.Utilities
 {
     public interface IDateTimeProvider
     {

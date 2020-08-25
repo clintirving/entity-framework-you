@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYouCore.Permissions
+namespace EfYou.Permissions
 {
     public interface IPermissionService<T>
     {

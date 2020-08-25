@@ -6,7 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-namespace EfYouCore.Filters
+namespace EfYou.Filters
 {
     public class Paging
     {

@@ -14,7 +14,7 @@ using System.Data.Entity.Validation;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EfYouCore.DatabaseContext
+namespace EfYou.DatabaseContext
 {
     public interface IContext : IDisposable
     {

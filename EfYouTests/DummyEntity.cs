@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EfYouCore.Model.Attributes;
+using EfYou.Model.Attributes;
 
-namespace EfYouCoreTests
+namespace EfYouTests
 {
     public enum Choices
     {
@@ -56,6 +56,8 @@ namespace EfYouCoreTests
 
         public Choices Choices { get; set; }
 
+        public Choices? NullableChoices { get; set; }
+
         public DummyParent DummyParent { get; set; }
 
         public int DummyParentId { get; set; }
@@ -71,7 +73,7 @@ namespace EfYouCoreTests
         [FilterExtensions] public DummyFilterExtensions DummyFilterExtensions { get; set; }
 
         [NotMapped] public string NotMappedProperty { get; set; }
-
+        
         public TimeSpan? TimeOfDay { get; set; }
 
         public int FilterableInt { get; set; }

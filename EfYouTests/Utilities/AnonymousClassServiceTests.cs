@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using EfYouCore.Utilities;
+using EfYou.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace EfYouCoreTests.Utilities
+namespace EfYouTests.Utilities
 {
     [TestClass]
     public class AnonymousClassServiceTests
