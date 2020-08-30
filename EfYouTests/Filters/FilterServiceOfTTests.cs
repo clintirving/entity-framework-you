@@ -1050,7 +1050,7 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AddAggregationFilter_FourDummyObjectsWithOneGroupBy_ReturnsQueryableWithCorrectExpressionTree()
+        public void AddAggregationFilter_SingleGroupByAndPagingLargeEnoughToReturnAllResults_ReturnsAllResultsGroupedIntoMatchingGroups()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -1064,17 +1064,26 @@ namespace EfYouTests.Filters
             }.AsQueryable();
 
             // Act
-            var results = filterService.Object.AddAggregationFilter(queryable, new List<string> {"Choices"}, new Paging {Page = 0, Count = 20},
+            var results = filterService.Object.AddAggregationFilter(queryable, new List<string> { "FilterableInt" }, new Paging {Page = 0, Count = 20},
                 new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}});
 
             // Assert
             Assert.IsTrue(results.AsQueryable().ToString()
                 .Contains(
-                    ".GroupBy(x => new CustomType(Choices = x.Choices), x => Convert(x.Id, Int64)).GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList()).OrderByDescending(x => x.Key).Skip(0).Take(20)"));
+                    ".GroupBy(x => new CustomType(FilterableInt = x.FilterableInt), x => Convert(x.Id, Int64)).GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList()).OrderByDescending(x => x.Key).Skip(0).Take(20)"));
+            Assert.AreEqual(2, results.Count()); // 2 Groups
+            Assert.AreEqual(2, results.ToList()[0].SelectMany(x => x).Count()); // 1st Group contains 2 items [4,1] ordered desc
+            Assert.AreEqual(4, results.ToList()[0].SelectMany(x => x).ToList()[0]);
+            Assert.AreEqual(1, results.ToList()[0].SelectMany(x => x).ToList()[1]);
+            Assert.AreEqual(2, results.ToList()[1].SelectMany(x => x).Count()); // 2nd Group contains 2 items [4,1] ordered desc
+            Assert.AreEqual(3, results.ToList()[1].SelectMany(x => x).ToList()[0]);
+            Assert.AreEqual(2, results.ToList()[1].SelectMany(x => x).ToList()[1]);
+            Assert.AreEqual(4, results.ToList()[0].Key); // Groups are ordered in descending order of key
+            Assert.AreEqual(3, results.ToList()[1].Key);
         }
 
         [TestMethod]
-        public void AddAggregationFilter_FourDummyObjectsWithTwoGroupBys_ReturnsQueryableWithCorrectExpressionTree()
+        public void AddAggregationFilter_TwoGroupBysAndPagingToReturnOnlyTwoResults_ReturnsFirstTwoGroupedResultsOnly()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -1089,13 +1098,52 @@ namespace EfYouTests.Filters
 
             // Act
             var results = filterService.Object.AddAggregationFilter(queryable, new List<string> {"Choices", "FilterableInt"},
-                new Paging {Page = 1, Count = 12},
+                new Paging {Page = 0, Count = 2},
                 new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}});
 
             // Assert
             Assert.IsTrue(results.ToString()
                 .Contains(
-                    ".GroupBy(x => new CustomType(Choices = x.Choices, FilterableInt = x.FilterableInt), x => Convert(x.Id, Int64)).GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList()).OrderByDescending(x => x.Key).Skip(12).Take(12)"));
+                    ".GroupBy(x => new CustomType(Choices = x.Choices, FilterableInt = x.FilterableInt), x => Convert(x.Id, Int64)).GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList()).OrderByDescending(x => x.Key).Skip(0).Take(2)"));
+            Assert.AreEqual(2, results.Count()); // 2 Groups
+            Assert.AreEqual(2, results.ToList()[0].SelectMany(x => x).Count()); // 1st Group contains 2 items [4,1] ordered desc
+            Assert.AreEqual(4, results.ToList()[0].SelectMany(x => x).ToList()[0]);
+            Assert.AreEqual(1, results.ToList()[0].SelectMany(x => x).ToList()[1]);
+            Assert.AreEqual(4, results.ToList()[0].Key); // Groups are ordered in descending order of key
+            Assert.AreEqual(3, results.ToList()[1].Key);
+        }
+
+        [TestMethod]
+        public void AddAggregationFilter_TwoGroupBysAndPagingIsNull_ReturnsAllResultsGroupedIntoMatchingGroups()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Id = 1, Choices = Choices.Poorly, Enabled = true, FilterableInt = 5},
+                new DummyEntity {Id = 2, Choices = Choices.Wisely, Enabled = true, FilterableInt = 4},
+                new DummyEntity {Id = 3, Choices = Choices.Undefined, Enabled = false, FilterableInt = 4},
+                new DummyEntity {Id = 4, Choices = Choices.Poorly, Enabled = true, FilterableInt = 5}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AddAggregationFilter(queryable, new List<string> { "Choices", "FilterableInt" },
+                null,
+                new List<OrderBy> { new OrderBy { ColumnName = "Id", Descending = true } });
+
+            // Assert
+            // Note that we cannot simply compare the results in C# because the default equality comparer will compare whether the CustomType objects
+            // are the same instance.  Instead, we have to compare the query string
+            Assert.IsTrue(results.ToString()
+                .Contains(".GroupBy(x => new CustomType(Choices = x.Choices, FilterableInt = x.FilterableInt), x => Convert(x.Id, Int64)).GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList()).OrderByDescending(x => x.Key)"));
+            Assert.AreEqual(3, results.Count()); // 3 Groups
+            Assert.AreEqual(2, results.ToList()[0].SelectMany(x => x).Count()); // 1st Group contains 2 items [4,1] ordered desc
+            Assert.AreEqual(4, results.ToList()[0].SelectMany(x => x).ToList()[0]);
+            Assert.AreEqual(1, results.ToList()[0].SelectMany(x => x).ToList()[1]);
+            Assert.AreEqual(4, results.ToList()[0].Key); // Groups are ordered in descending order of key
+            Assert.AreEqual(3, results.ToList()[1].Key);
+            Assert.AreEqual(2, results.ToList()[2].Key);
         }
     }
 }
