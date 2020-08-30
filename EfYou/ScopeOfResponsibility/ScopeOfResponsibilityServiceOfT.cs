@@ -20,7 +20,7 @@ using EfYou.Security.User;
 
 namespace EfYou.ScopeOfResponsibility
 {
-    public abstract class ScopeOfResponsibilityService<T> : IScopeOfResponsibilityService<T> where T : class, new()
+    public abstract class ScopeOfResponsibilityServiceOfT<T> : IScopeOfResponsibilityService<T> where T : class, new()
     {
         private readonly ISecurityContextFactory _contextFactory;
         private readonly IIdentityService _identityService;
@@ -30,7 +30,7 @@ namespace EfYou.ScopeOfResponsibility
 
         private DateTime _loginCacheLastDumped = DateTime.MinValue;
 
-        protected ScopeOfResponsibilityService(ISecurityContextFactory contextFactory, IIdentityService identityService, ILog log)
+        protected ScopeOfResponsibilityServiceOfT(ISecurityContextFactory contextFactory, IIdentityService identityService, ILog log)
         {
             _contextFactory = contextFactory;
             _identityService = identityService;
