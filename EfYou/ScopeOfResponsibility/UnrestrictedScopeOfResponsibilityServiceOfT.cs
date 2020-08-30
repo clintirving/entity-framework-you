@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace EfYou.ScopeOfResponsibility
 {
-    public class UnrestrictedScopeOfResponsibility<T> : IScopeOfResponsibilityService<T> where T : class, new()
+    public class UnrestrictedScopeOfResponsibilityServiceOfT<T> : IScopeOfResponsibilityService<T> where T : class, new()
     {
         public IQueryable<T> FilterResultOnCurrentPrincipal(IQueryable<T> query)
         {

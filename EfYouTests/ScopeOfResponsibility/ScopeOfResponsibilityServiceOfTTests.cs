@@ -23,7 +23,7 @@ using Moq;
 namespace EfYouTests.ScopeOfResponsibility
 {
     [TestClass]
-    public class ScopeOfResponsibilityServiceTests
+    public class ScopeOfResponsibilityServiceOfTTests
     {
         private readonly Mock<ILog> _log = new Mock<ILog>();
         private Mock<IContext> _context;
@@ -31,7 +31,7 @@ namespace EfYouTests.ScopeOfResponsibility
         private Mock<IIdentityService> _identityService;
         private Mock<DbSet<DummyEntity>> _mockDbSet;
         private Mock<DbSet<Login>> _mockDbSetLogins;
-        private Mock<ScopeOfResponsibilityService<DummyEntity>> _scopeOfResponsibilityService;
+        private Mock<ScopeOfResponsibilityServiceOfT<DummyEntity>> _scopeOfResponsibilityService;
 
         [TestInitialize]
         public void Setup()
@@ -54,7 +54,7 @@ namespace EfYouTests.ScopeOfResponsibility
             _identityService.Setup(x => x.GetEmail()).Returns("email@email.com");
 
             _scopeOfResponsibilityService =
-                new Mock<ScopeOfResponsibilityService<DummyEntity>>(_contextFactory.Object, _identityService.Object, _log.Object) {CallBase = true};
+                new Mock<ScopeOfResponsibilityServiceOfT<DummyEntity>>(_contextFactory.Object, _identityService.Object, _log.Object) {CallBase = true};
         }
 
         private void SetMockLoginData(IEnumerable<Login> data)
