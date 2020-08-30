@@ -27,7 +27,7 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Publish FluentEmail.Core
-      uses: brandedoutcast/publish-nuget@v2.5.2
+      uses: brandedoutcast/publish-nuget@v2.5.5
       with:
           PROJECT_FILE_PATH: ./EfYou/EfYou.csproj
           NUGET_KEY: oy2fxjmpbak5twokhtbqmxcjjqhhrm3ubn2tgfbvr3eily
