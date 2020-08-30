@@ -31,3 +31,4 @@ jobs:
       with:
           PROJECT_FILE_PATH: src/EfYou/EfYou.csproj
           NUGET_KEY: oy2fxjmpbak5twokhtbqmxcjjqhhrm3ubn2tgfbvr3eily
+          PACKAGE_NAME: EfYou
