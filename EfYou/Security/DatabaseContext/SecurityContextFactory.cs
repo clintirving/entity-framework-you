@@ -6,18 +6,18 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
-using Common.Logging;
 using EfYou.DatabaseContext;
 using EfYou.Security.User;
+using Microsoft.Extensions.Logging;
 
 namespace EfYou.Security.DatabaseContext
 {
     public class SecurityContextFactory : ISecurityContextFactory
     {
         private readonly IIdentityService _identityService;
-        private readonly ILog _log;
+        private readonly ILogger _log;
 
-        public SecurityContextFactory(IIdentityService identityService, ILog log)
+        public SecurityContextFactory(IIdentityService identityService, ILogger log)
         {
             _identityService = identityService;
             _log = log;

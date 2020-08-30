@@ -12,22 +12,22 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
-using Common.Logging;
 using EfYou.Extensions;
 using EfYou.Model.Attributes;
 using EfYou.Model.Enumerations;
 using EfYou.Model.Models;
 using EfYou.Security.User;
 using EfYou.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace EfYou.DatabaseContext
 {
     public class Context : DbContext, IContext
     {
         private readonly IIdentityService _identityService;
-        private readonly ILog _log;
+        private readonly ILogger _log;
 
-        public Context(string databaseName, IIdentityService identityService, ILog log)
+        public Context(string databaseName, IIdentityService identityService, ILogger log)
             : this(databaseName)
         {
             _identityService = identityService;

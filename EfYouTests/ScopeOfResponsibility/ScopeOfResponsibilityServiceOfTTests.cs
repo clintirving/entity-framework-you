@@ -11,12 +11,12 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Security;
-using Common.Logging;
 using EfYou.DatabaseContext;
 using EfYou.ScopeOfResponsibility;
 using EfYou.Security.DatabaseContext;
 using EfYou.Security.Models;
 using EfYou.Security.User;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -25,7 +25,7 @@ namespace EfYouTests.ScopeOfResponsibility
     [TestClass]
     public class ScopeOfResponsibilityServiceOfTTests
     {
-        private readonly Mock<ILog> _log = new Mock<ILog>();
+        private readonly Mock<ILogger> _log = new Mock<ILogger>();
         private Mock<IContext> _context;
         private Mock<ISecurityContextFactory> _contextFactory;
         private Mock<IIdentityService> _identityService;

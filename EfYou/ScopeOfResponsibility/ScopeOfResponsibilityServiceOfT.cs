@@ -12,11 +12,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Security;
-using Common.Logging;
 using EfYou.Extensions;
 using EfYou.Security.DatabaseContext;
 using EfYou.Security.Models;
 using EfYou.Security.User;
+using Microsoft.Extensions.Logging;
 
 namespace EfYou.ScopeOfResponsibility
 {
@@ -24,13 +24,13 @@ namespace EfYou.ScopeOfResponsibility
     {
         private readonly ISecurityContextFactory _contextFactory;
         private readonly IIdentityService _identityService;
-        private readonly ILog _log;
+        private readonly ILogger _log;
 
         private readonly Dictionary<string, Login> _loginCache = new Dictionary<string, Login>();
 
         private DateTime _loginCacheLastDumped = DateTime.MinValue;
 
-        protected ScopeOfResponsibilityServiceOfT(ISecurityContextFactory contextFactory, IIdentityService identityService, ILog log)
+        protected ScopeOfResponsibilityServiceOfT(ISecurityContextFactory contextFactory, IIdentityService identityService, ILogger log)
         {
             _contextFactory = contextFactory;
             _identityService = identityService;

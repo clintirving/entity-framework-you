@@ -7,11 +7,11 @@
 // // -----------------------------------------------------------------------
 
 using System.Data.Entity;
-using Common.Logging;
 using EfYou.DatabaseContext;
 using EfYou.Security.DatabaseContext.Migrations;
 using EfYou.Security.Models;
 using EfYou.Security.User;
+using Microsoft.Extensions.Logging;
 
 namespace EfYou.Security.DatabaseContext
 {
@@ -23,7 +23,7 @@ namespace EfYou.Security.DatabaseContext
         {
         }
 
-        public SecurityDbContext(IIdentityService identityService, ILog log)
+        public SecurityDbContext(IIdentityService identityService, ILogger log)
             : base("SecurityDb", identityService, log)
         {
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<SecurityDbContext, Configuration>());
