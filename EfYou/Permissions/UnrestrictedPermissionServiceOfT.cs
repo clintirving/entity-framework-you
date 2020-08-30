@@ -8,7 +8,7 @@
 
 namespace EfYou.Permissions
 {
-    public class PermissionService<T> : IPermissionService<T>
+    public class UnrestrictedPermissionServiceOfT<T> : IPermissionService<T>
     {
         public virtual void Get()
         {
