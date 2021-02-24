@@ -30,5 +30,5 @@ jobs:
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
           PROJECT_FILE_PATH: ./EfYou/EfYou.csproj
-          NUGET_KEY: oy2fxjmpbak5twokhtbqmxcjjqhhrm3ubn2tgfbvr3eily
+          NUGET_KEY: ${{secrets.NUGET_TOKEN}}
           PACKAGE_NAME: EfYou
