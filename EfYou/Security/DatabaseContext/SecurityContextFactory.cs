@@ -8,6 +8,7 @@
 
 using EfYou.DatabaseContext;
 using EfYou.Security.User;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace EfYou.Security.DatabaseContext
@@ -15,17 +16,19 @@ namespace EfYou.Security.DatabaseContext
     public class SecurityContextFactory : ISecurityContextFactory
     {
         private readonly IIdentityService _identityService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger _log;
 
-        public SecurityContextFactory(IIdentityService identityService, ILogger log)
+        public SecurityContextFactory(IIdentityService identityService, IConfiguration configuration, ILogger log)
         {
             _identityService = identityService;
+            _configuration = configuration;
             _log = log;
         }
 
         public virtual IContext Create()
         {
-            return new SecurityDbContext(_identityService, _log);
+            return new SecurityDbContext(_identityService, _log, _configuration);
         }
     }
 }
