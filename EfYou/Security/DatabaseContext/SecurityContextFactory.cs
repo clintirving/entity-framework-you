@@ -28,7 +28,7 @@ namespace EfYou.Security.DatabaseContext
 
         public virtual IContext Create()
         {
-            return new SecurityDbContext(_identityService, _log, _configuration);
+            return new SecurityDbContext(_identityService, _configuration, _log);
         }
     }
 }
