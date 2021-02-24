@@ -1,9 +1,7 @@
-# entity-framework-you
+# Atlas
 
-[![Build Status](https://travis-ci.com/clintirving/entity-framework-you.svg?branch=master)](https://travis-ci.com/clintirving/entity-framework-you)
-[![Coverage Status](https://coveralls.io/repos/github/clintirving/entity-framework-you/badge.svg?branch=master)](https://coveralls.io/github/clintirving/entity-framework-you?branch=master)
+This is a fork of Entity Framework You, which spun out of work that both the contributors of Entity Framework You and of Atlas had done in the past. 
 
-Nuget package: https://www.nuget.org/packages/EfYou/
+This project currently targets .NET 5 and leverages Entity Framework Core amongst other developments.
 
-To publish to nuget, simply incremement the version number in the csproj.
-
+Updates to come.
