@@ -3,7 +3,7 @@ mono: none
 solution: EfYou.sln
 dotnet: 3.1
 env:
-  - COVERALLS_REPO_TOKEN: 6D5oaz2cGIKSZnj7OGLdOtwtQQb9JFGZo
+  - COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_KEY}}
 
 before_script: 
 - dotnet restore ".\EfYou.sln" 
