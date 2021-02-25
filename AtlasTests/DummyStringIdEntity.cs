@@ -1,0 +1,6 @@
+﻿namespace AtlasTests
+{
+    class DummyStringIdEntity
+    {
+    }
+}
