@@ -27,7 +27,7 @@ namespace EfYou.Security.DatabaseContext
         }
 
         public SecurityDbContext(IIdentityService identityService, IConfiguration configuration, ILogger log)
-            : base(_configuration.GetConnectionString("SecurityDb"), identityService, log)
+            : base(configuration.GetConnectionString("SecurityDb"), identityService, log)
         {
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<SecurityDbContext, Configuration>());
             Configuration.ProxyCreationEnabled = false;
