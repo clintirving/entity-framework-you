@@ -57,17 +57,17 @@ namespace EfYou.EntityServices
             return Get(ids, includes, orderBys, null);
         }
 
-        public T GetFirst(List<long> ids)
+        public virtual T GetFirst(List<long> ids)
         {
             return GetFirst(ids, null, null);
         }
 
-        public T GetFirst(List<long> ids, List<string> includes)
+        public virtual T GetFirst(List<long> ids, List<string> includes)
         {
             return GetFirst(ids, includes, null);
         }
 
-        public T GetFirst(List<long> ids, List<string> includes, List<OrderBy> orderBys)
+        public virtual T GetFirst(List<long> ids, List<string> includes, List<OrderBy> orderBys)
         {
             return Get(ids, includes, orderBys, _selectTop1).FirstOrDefault();
         }
