@@ -57,6 +57,9 @@ namespace EfYou.DatabaseContext
 
         private void InitializeHypertables(DbModelBuilder modelBuilder, Type hypertableEntity)
         {
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
+
             var hypertablePrimaryKeyAttribute = hypertableEntity.GetProperties().FirstOrDefault(x =>
                 x.GetCustomAttribute(typeof(HypertablePrimaryKeyAttribute)) != null);
 
@@ -65,7 +68,7 @@ namespace EfYou.DatabaseContext
                 return;
             }
 
-            var tableName = hypertablePrimaryKeyAttribute.Name;
+            var tableName = hypertableAttribute.Name;
 
             var columnAttribute = (ColumnAttribute)hypertablePrimaryKeyAttribute.GetCustomAttribute(typeof(ColumnAttribute));
 
@@ -79,7 +82,22 @@ namespace EfYou.DatabaseContext
 
         private void ConfigureCompression(Type hypertableEntity)
         {
-            throw new System.NotImplementedException();
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
+            
+            var compressionAttribute =
+                (TimescaleCompressionAttribute)hypertableEntity.GetCustomAttribute(
+                    typeof(TimescaleCompressionAttribute));
+
+            if (compressionAttribute == null)
+            {
+                return;
+            }
+
+            var tableName = hypertableAttribute.Name;
+
+            DatabaseAccessor.ExecuteSqlCommand(
+                $"ALTER TABLE {tableName} SET (timescaledb.compress, timescaledb.compress_segmentby='{compressionAttribute.SegmentBy}', timescaledb.compress_orderby='{compressionAttribute.OrderBy}');");
         }
 
         private void ConfigureCompressionPolicies(Type hypertableEntity)
