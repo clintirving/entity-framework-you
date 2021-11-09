@@ -26,20 +26,18 @@ namespace EfYou.DatabaseContext
     {
         private readonly IIdentityService _identityService;
         private readonly ILogger _log;
-        private readonly Dictionary<string, Type> TimescaleTypes;
 
-        public Context(string databaseName, IIdentityService identityService, ILogger log, Dictionary<string, Type> timescaleTypes)
-            : this(databaseName, timescaleTypes)
+        public Context(string databaseName, IIdentityService identityService, ILogger log)
+            : this(databaseName)
         {
             _identityService = identityService;
             _log = log;
             DatabaseAccessor = new DatabaseAccessor(Database);
         }
 
-        public Context(string databaseName, Dictionary<string, Type> timescaleTypes)
+        public Context(string databaseName)
             : base(databaseName)
         {
-            TimescaleTypes = timescaleTypes;
             Configuration.ProxyCreationEnabled = false;
         }
 
