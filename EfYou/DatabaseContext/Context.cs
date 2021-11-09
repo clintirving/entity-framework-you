@@ -26,18 +26,20 @@ namespace EfYou.DatabaseContext
     {
         private readonly IIdentityService _identityService;
         private readonly ILogger _log;
+        private readonly Dictionary<string, Type> TimescaleTypes;
 
-        public Context(string databaseName, IIdentityService identityService, ILogger log)
-            : this(databaseName)
+        public Context(string databaseName, IIdentityService identityService, ILogger log, Dictionary<string, Type> timescaleTypes)
+            : this(databaseName, timescaleTypes)
         {
             _identityService = identityService;
             _log = log;
             DatabaseAccessor = new DatabaseAccessor(Database);
         }
 
-        public Context(string databaseName)
+        public Context(string databaseName, Dictionary<string, Type> timescaleTypes)
             : base(databaseName)
         {
+            TimescaleTypes = timescaleTypes;
             Configuration.ProxyCreationEnabled = false;
         }
 
@@ -66,6 +68,7 @@ namespace EfYou.DatabaseContext
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+
             modelBuilder.Conventions.Add<ForeignKeyNamingConvention>();
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
             modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
