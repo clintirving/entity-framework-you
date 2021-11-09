@@ -34,9 +34,11 @@ namespace EfYou.DatabaseContext
             var entities = modelBuilder.GetAllDatabaseEntities();
 
             TimescaleEntities.AddRange(entities.Where(x => x.GetCustomAttributes(typeof(HypertableAttribute), true).FirstOrDefault() != null).ToList());
+
+            ConfigureTimescale();
         }
 
-        public void ConfigureTimescale(DbModelBuilder modelBuilder)
+        public void ConfigureTimescale()
         {
             foreach (var timescaleEntity in TimescaleEntities)
             {
@@ -55,7 +57,7 @@ namespace EfYou.DatabaseContext
             
         }
 
-        private void InitializeHypertables(DbModelBuilder modelBuilder, Type hypertableEntity)
+        private void InitializeHypertables(Type hypertableEntity)
         {
             var hypertableAttribute = hypertableEntity.GetProperties()
                 .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
@@ -102,21 +104,59 @@ namespace EfYou.DatabaseContext
 
         private void ConfigureCompressionPolicies(Type hypertableEntity)
         {
-            throw new System.NotImplementedException();
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
+
+            var retentionPolicyAttribute =
+                (TimescaleCompressionPolicyAttribute)hypertableEntity.GetCustomAttribute(
+                    typeof(TimescaleCompressionPolicyAttribute));
+
+            if (retentionPolicyAttribute == null)
+            {
+                return;
+            }
+
+            var tableName = hypertableAttribute.Name;
+
+            Console.WriteLine($"SELECT add_retention_policy('{tableName}', INTERVAL '{retentionPolicyAttribute.Interval}', if_not_exists => TRUE);");
+
+            DatabaseAccessor.ExecuteSqlCommand(
+                $"SELECT add_compression_policy('{tableName}', INTERVAL '{retentionPolicyAttribute.Interval}', if_not_exists => TRUE);");
         }
 
         private void ConfigureRetentionPolicies(Type hypertableEntity)
         {
-            throw new System.NotImplementedException();
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
+            
+            var retentionPolicyAttribute =
+                (TimescaleRetentionPolicyAttribute)hypertableEntity.GetCustomAttribute(
+                    typeof(TimescaleRetentionPolicyAttribute));
+
+            if (retentionPolicyAttribute == null)
+            {
+                return;
+            }
+
+            var tableName = hypertableAttribute.Name;
+
+            Console.WriteLine($"SELECT add_retention_policy('{tableName}', INTERVAL '{retentionPolicyAttribute.Interval}', if_not_exists => TRUE);");
+
+            DatabaseAccessor.ExecuteSqlCommand(
+                $"SELECT add_retention_policy('{tableName}', INTERVAL '{retentionPolicyAttribute.Interval}', if_not_exists => TRUE);");
         }
 
         private void CreateContinuousAggregates(Type hypertableEntity)
         {
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
             throw new System.NotImplementedException();
         }
 
         private void CreateContinuousAggregationPolicies(Type hypertableEntity)
         {
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
             throw new System.NotImplementedException();
         }
     }
