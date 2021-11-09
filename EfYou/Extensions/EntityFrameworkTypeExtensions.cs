@@ -16,6 +16,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
 using EfYou.DatabaseContext;
+using EfYou.Model.Attributes;
 
 namespace EfYou.Extensions
 {
@@ -89,6 +90,44 @@ namespace EfYou.Extensions
         public static long GetIdFromEntity<T>(this T entity)
         {
             return (long) Convert.ChangeType(entity.GetType().GetPrimaryKeyProperty().GetValue(entity), typeof(long));
+        }
+
+        public static bool IsHypertable(this Type entity)
+        {
+            var hypertableAttribute = entity.GetType().GetCustomAttribute(typeof(HypertableAttribute));
+
+            return hypertableAttribute != null;
+        }
+
+        public static List<PropertyInfo> GetHypertablePrimaryKeyProperties(this Type entityType)
+        {
+            // Ignore virtual properties and not mapped properties.
+            return entityType.GetProperties()
+                .Where(x => Attribute.IsDefined(x, typeof(HypertablePrimaryKeyAttribute))).ToList();
+        }
+
+        public static PropertyInfo GetHypertablePrimaryKeyProperty(this Type entityType)
+        {
+            var primaryKeyProperties = entityType.GetHypertablePrimaryKeyProperties();
+
+            if (primaryKeyProperties.Count != 1)
+            {
+                throw new ApplicationException(string.Format(
+                    "Hypertable Primary key for type {0} must consist of only a single column - GetHypertablePrimaryKeyProperty will not work for this entity type",
+                    entityType.FullName));
+            }
+
+            return primaryKeyProperties.Single();
+        }
+
+        public static List<DateTime> GetHypertableIdsFromEntities<T>(this List<T> entities)
+        {
+            return entities.Select(GetHypertableIdFromEntity).ToList();
+        }
+
+        public static DateTime GetHypertableIdFromEntity<T>(this T entity)
+        {
+            return (DateTime)Convert.ChangeType(entity.GetType().GetHypertablePrimaryKeyProperty().GetValue(entity), typeof(DateTime));
         }
     }
 }
