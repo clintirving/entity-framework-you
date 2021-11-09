@@ -54,7 +54,6 @@ namespace EfYou.DatabaseContext
 
                 CreateContinuousAggregationPolicies(timescaleEntity);
             }
-            
         }
 
         private void InitializeHypertables(Type hypertableEntity)
@@ -243,7 +242,36 @@ namespace EfYou.DatabaseContext
 
         private void CreateContinuousAggregationPolicies(Type hypertableEntity)
         {
-            throw new System.NotImplementedException();
+            var hypertableAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
+
+            var materializedViewAttribute =
+                (MaterializedViewAttribute)hypertableEntity.GetCustomAttribute(
+                    typeof(MaterializedViewAttribute));
+
+            if (materializedViewAttribute == null)
+            {
+                throw new ApplicationException(
+                    $"MaterializedView or attributes missing from {hypertableEntity.Name}");
+            }
+
+            var timeBucketAttribute = hypertableEntity.GetProperties()
+                .FirstOrDefault(x => x.GetCustomAttribute(typeof(TimeBucketAttribute)) != null);
+
+            if (timeBucketAttribute == null)
+            {
+                throw new ApplicationException(
+                    $"Time bucket attribute required for {hypertableEntity.Name} policy configuration");
+            }
+
+            var timeBucketInterval =
+                (TimeBucketAttribute)timeBucketAttribute.GetCustomAttribute(typeof(TimeBucketAttribute));
+
+            Console.WriteLine($"SELECT add_continuous_aggregate_policy('{materializedViewAttribute.Name}', start_offset => NULL, " +
+                              $"end_offset => INTERVAL '{timeBucketInterval.Interval}', schedule_interval => INTERVAL '{timeBucketInterval.Interval}', if_not_exists => TRUE);");
+
+            DatabaseAccessor.ExecuteSqlCommand($"SELECT add_continuous_aggregate_policy('{materializedViewAttribute.Name}', start_offset => NULL, " +
+                                               $"end_offset => INTERVAL '{timeBucketInterval.Interval}', schedule_interval => INTERVAL '{timeBucketInterval.Interval}', if_not_exists => TRUE);");
         }
     }
     }
