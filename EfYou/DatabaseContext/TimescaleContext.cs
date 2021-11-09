@@ -150,14 +150,101 @@ namespace EfYou.DatabaseContext
         {
             var hypertableAttribute = hypertableEntity.GetProperties()
                 .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
-            throw new System.NotImplementedException();
+            
+            var materializedViewAttribute =
+                   (MaterializedViewAttribute)hypertableEntity.GetCustomAttribute(
+                       typeof(MaterializedViewAttribute));
+
+            var materializedViewBaseTableAttribute = (MaterializedViewBaseTableAttribute)hypertableEntity.GetCustomAttribute(
+                typeof(MaterializedViewBaseTableAttribute));
+
+            if (materializedViewAttribute == null || materializedViewBaseTableAttribute == null)
+            {
+                throw new ApplicationException(
+                    $"MaterializedView or MaterializedViewBaseTableAttribute attributes missing from {hypertableEntity.Name}");
+            }
+
+            var columns = new List<string>();
+
+            var groupBys = new List<string>();
+
+            foreach (var propertyInfo in hypertableEntity.GetProperties())
+            {
+                if (propertyInfo.GetCustomAttribute(typeof(TimeBucketAttribute)) != null)
+                {
+                    var timeBucketAttribute = (TimeBucketAttribute)propertyInfo.GetCustomAttribute(typeof(TimeBucketAttribute));
+
+                    var aggregateColumn = (AggregateColumnAttribute)propertyInfo.GetCustomAttribute(typeof(AggregateColumnAttribute));
+
+                    var columnName = (ColumnAttribute)propertyInfo.GetCustomAttribute(typeof(ColumnAttribute));
+
+                    if (aggregateColumn == null || columnName == null)
+                    {
+                        throw new ApplicationException(
+                            $"AggregateColumn or Column is missing from view {hypertableEntity.Name}  for property {propertyInfo.Name}");
+                    }
+
+                    columns.Add($"time_bucket('{timeBucketAttribute.Interval}',{aggregateColumn.ColumnName}) as {columnName.Name}");
+
+                    if (propertyInfo.GetCustomAttribute(typeof(GroupByAttribute)) != null)
+                    {
+                        groupBys.Add($"time_bucket('{timeBucketAttribute.Interval}',{aggregateColumn.ColumnName})");
+                    }
+                }
+                else if (propertyInfo.GetCustomAttribute(typeof(AggregateTypeAttribute)) != null)
+                {
+                    var aggregateFunction = (AggregateTypeAttribute)propertyInfo.GetCustomAttribute(typeof(AggregateTypeAttribute));
+
+                    var aggregateColumn = (AggregateColumnAttribute)propertyInfo.GetCustomAttribute(typeof(AggregateColumnAttribute));
+
+                    var columnName = (ColumnAttribute)propertyInfo.GetCustomAttribute(typeof(ColumnAttribute));
+
+                    if (aggregateColumn == null || columnName == null)
+                    {
+                        throw new ApplicationException(
+                            $"AggregateColumn or Column is missing from view {hypertableEntity.Name}  for property {propertyInfo.Name}");
+                    }
+
+                    columns.Add($"{aggregateFunction.AggregationFunction}({aggregateColumn.ColumnName}) as {columnName.Name}");
+
+                    if (propertyInfo.GetCustomAttribute(typeof(GroupByAttribute)) != null)
+                    {
+                        groupBys.Add(columnName.Name);
+                    }
+                }
+                else
+                {
+                    var columnName = (ColumnAttribute)propertyInfo.GetCustomAttribute(typeof(ColumnAttribute));
+
+                    if (columnName == null)
+                    {
+                        throw new ApplicationException(
+                            $"Column is missing from view {hypertableEntity.Name} for property {propertyInfo.Name}");
+                    }
+
+                    columns.Add($"{columnName.Name}");
+
+                    if (propertyInfo.GetCustomAttribute(typeof(GroupByAttribute)) != null)
+                    {
+                        groupBys.Add(columnName.Name);
+                    }
+                }
+
+            }
+
+            Console.WriteLine($"CREATE MATERIALIZED VIEW IF NOT EXISTS {materializedViewAttribute.Name} WITH (timescaledb.continuous)" +
+                              $"AS SELECT {string.Join(',', columns)} FROM {materializedViewBaseTableAttribute.Table} GROUP BY {string.Join(',', groupBys)};");
+
+            DatabaseAccessor.ExecuteSqlCommand(
+                $"CREATE MATERIALIZED VIEW IF NOT EXISTS {materializedViewAttribute.Name} WITH (timescaledb.continuous)" +
+                $"AS SELECT {string.Join(',', columns)} FROM {materializedViewBaseTableAttribute.Table} GROUP BY {string.Join(',', groupBys)};");
+            
         }
 
         private void CreateContinuousAggregationPolicies(Type hypertableEntity)
         {
-            var hypertableAttribute = hypertableEntity.GetProperties()
-                .FirstOrDefault(x => x.GetCustomAttributes(typeof(HypertableAttribute)) != null);
             throw new System.NotImplementedException();
         }
+    }
     }
 }
