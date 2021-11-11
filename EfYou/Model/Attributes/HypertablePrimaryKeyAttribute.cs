@@ -2,7 +2,7 @@
 
 namespace EfYou.Model.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class HypertablePrimaryKeyAttribute : Attribute
     {
         
