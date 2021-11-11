@@ -66,7 +66,6 @@ namespace EfYou.DatabaseContext
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-
             modelBuilder.Conventions.Add<ForeignKeyNamingConvention>();
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
             modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
@@ -87,7 +86,7 @@ namespace EfYou.DatabaseContext
 
         protected Audit CreateAudit(object entity, EntityState entityState)
         {
-            if (entity.GetType().GetPrimaryKeyProperty().PropertyType == typeof(long))
+            if (!entity.GetType().IsHypertable() && entity.GetType().GetPrimaryKeyProperty().PropertyType == typeof(long))
             {
                 throw new ApplicationException("Cannot Audit a class with a primary key of type long");
             }
@@ -98,7 +97,7 @@ namespace EfYou.DatabaseContext
                 DateTime = DateTime.UtcNow,
                 Email = _identityService.GetEmail(),
                 Type = entity.GetType().FullName,
-                TypeId = (int) entity.GetIdFromEntity(),
+                TypeId = entity.GetType().IsHypertable() ? (int) entity.GetHypertableIdFromEntity().Ticks : (int) entity.GetIdFromEntity(), // Just a workaround
                 SerializedEntity = entity.SerializeToXml()
             };
         }
