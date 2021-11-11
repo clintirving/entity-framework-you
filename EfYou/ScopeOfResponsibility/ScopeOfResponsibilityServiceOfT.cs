@@ -44,7 +44,7 @@ namespace EfYou.ScopeOfResponsibility
             List<int> restrictedToIds;
             if (RestrictScopeOfResponsibilityOnLoginConfiguration(out restrictedToIds))
             {
-                var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
+                var primaryKeyProperty = typeof(T).IsHypertable() ? typeof(T).GetHypertablePrimaryKeyProperty() : typeof(T).GetPrimaryKeyProperty();
 
                 if (primaryKeyProperty.PropertyType != typeof(int))
                 {
