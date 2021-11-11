@@ -13,12 +13,15 @@ using EfYou.Model.Enumerations;
 
 namespace EfYou.Model.Models
 {
+    [Hypertable(Name = "audits")]
     public class Audit
     {
-        [Key] public int Id { get; set; }
+        public int AuditSerial { get; set; }
 
         public AuditAction AuditAction { get; set; }
 
+        [Key]
+        [HypertablePrimaryKey]
         public DateTime DateTime { get; set; }
 
         [Filter(AllowPartialStringMatch = true)]
