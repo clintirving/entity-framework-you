@@ -30,7 +30,12 @@ namespace EfYou.Filters
         {
             return FilterResultsOnIdsFilter(query, ids);
         }
-        
+
+        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<DateTime> intervals)
+        {
+            return FilterResultsOnIdsFilter(query, intervals);
+        }
+
         public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter)
         {
             return AutoFilter(query, filter);
@@ -59,6 +64,11 @@ namespace EfYou.Filters
                 var ordering = string.Join(OrderBySeparator,
                     orderBys.Select(x => x.Descending ? x.ColumnName + OrderByDescending : x.ColumnName));
                 return query.OrderBy(ordering);
+            }
+
+            if (typeof(T).IsHypertable())
+            {
+                return query.OrderBy(typeof(T).GetHypertablePrimaryKeyProperty().Name);
             }
 
             return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
@@ -102,7 +112,7 @@ namespace EfYou.Filters
 
         protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<long> ids)
         {
-            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
+            var primaryKeyProperty = typeof(T).IsHypertable() ? typeof(T).GetHypertablePrimaryKeyProperty() : typeof(T).GetPrimaryKeyProperty();
 
             var primaryKeyType = primaryKeyProperty.PropertyType;
 
@@ -121,6 +131,25 @@ namespace EfYou.Filters
             if (primaryKeyType == typeof(long))
             {
                 return query.Where(containsQuery, ids);
+            }
+
+            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");
+        }
+
+        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<DateTime> ids)
+        {
+            var primaryKeyProperty = typeof(T).IsHypertable() ? typeof(T).GetHypertablePrimaryKeyProperty() : typeof(T).GetPrimaryKeyProperty();
+
+            var primaryKeyType = primaryKeyProperty.PropertyType;
+
+            var primaryKeyName = primaryKeyProperty.Name;
+
+            var containsQuery = string.Format("{0} in @0", primaryKeyName);
+
+            // TODO: We will need to revisit this
+            if (primaryKeyType == typeof(DateTime))
+            {
+                return query.Where(containsQuery, ids.ToList());
             }
 
             throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");

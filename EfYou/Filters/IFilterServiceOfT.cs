@@ -6,6 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,5 +21,6 @@ namespace EfYou.Filters
         IQueryable<T> AddPaging(IQueryable<T> query, Paging paging);
         IQueryable<IGrouping<long, List<long>>> AddPaging(IQueryable<IGrouping<long, List<long>>> query, Paging paging);
         IQueryable<IGrouping<long, List<long>>> AddAggregationFilter(IQueryable<T> query, List<string> groupBys, Paging paging, List<OrderBy> orderBys);
+        IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<DateTime> intervals);
     }
 }
