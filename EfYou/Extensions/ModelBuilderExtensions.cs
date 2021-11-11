@@ -20,7 +20,7 @@ namespace EfYou.Extensions
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
                 System.Reflection.BindingFlags.Instance);
 
-            var entities = (IEnumerable<Type>) configuredTypes?.GetValue(configuredTypes, null);
+            var entities = (IEnumerable<Type>) configuredTypes?.GetValue(configuration, null);
 
             return entities?.ToList();
         }
