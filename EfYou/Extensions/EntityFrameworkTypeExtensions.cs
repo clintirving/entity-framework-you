@@ -94,9 +94,7 @@ namespace EfYou.Extensions
 
         public static bool IsHypertable(this Type entity)
         {
-            var hypertableAttribute = entity.GetType().GetCustomAttribute(typeof(HypertableAttribute));
-
-            return hypertableAttribute != null;
+            return entity.GetCustomAttribute(typeof(HypertableAttribute)) != null;
         }
 
         public static List<PropertyInfo> GetHypertablePrimaryKeyProperties(this Type entityType)
