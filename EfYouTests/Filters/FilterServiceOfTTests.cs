@@ -38,8 +38,8 @@ namespace EfYouTests.Filters
             var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
 
             // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
-            Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
+            Assert.AreEqual(1, results.Count());
+            Assert.AreEqual(2, results.Single().Id);
         }
 
         [TestMethod]
@@ -54,8 +54,8 @@ namespace EfYouTests.Filters
             var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> {2});
 
             // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
-            Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
+            Assert.AreEqual(1, results.Count());
+            Assert.AreEqual(2, results.Single().Id);
         }
 
         [TestMethod]
@@ -70,8 +70,8 @@ namespace EfYouTests.Filters
             var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
 
             // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
-            Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
+            Assert.AreEqual(1, results.Count());
+            Assert.AreEqual(2, results.Single().Id);
         }
 
         [TestMethod]
@@ -89,8 +89,8 @@ namespace EfYouTests.Filters
             var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { second });
 
             // Assert
-            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
-            Assert.AreEqual(second, results.Single().Id); // The single result should have Id = second GUID.
+            Assert.AreEqual(1, results.Count());
+            Assert.AreEqual(second, results.Single().Id);
         }
 
         [ExpectedException(typeof(ApplicationException))]
