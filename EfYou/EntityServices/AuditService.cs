@@ -30,7 +30,7 @@ namespace EfYou.EntityServices
             throw new NotSupportedException("Cannot add directly to the audits");
         }
 
-        public override void Delete(List<long> ids)
+        public override void Delete(List<dynamic> ids)
         {
             throw new NotSupportedException("Cannot delete audits");
         }

@@ -13,13 +13,13 @@ namespace EfYou.EntityServices
 {
     public interface IEntityService<T> where T : class, new()
     {
-        List<T> Get(List<long> ids);
-        List<T> Get(List<long> ids, List<string> includes);
-        List<T> Get(List<long> ids, List<string> includes, List<OrderBy> orderBys);
-        List<T> Get(List<long> ids, List<string> includes, List<OrderBy> orderBys, Paging paging);
-        T GetFirst(List<long> ids);
-        T GetFirst(List<long> ids, List<string> includes);
-        T GetFirst(List<long> ids, List<string> includes, List<OrderBy> orderBys);
+        List<T> Get(List<dynamic> ids);
+        List<T> Get(List<dynamic> ids, List<string> includes);
+        List<T> Get(List<dynamic> ids, List<string> includes, List<OrderBy> orderBys);
+        List<T> Get(List<dynamic> ids, List<string> includes, List<OrderBy> orderBys, Paging paging);
+        T GetFirst(List<dynamic> ids);
+        T GetFirst(List<dynamic> ids, List<string> includes);
+        T GetFirst(List<dynamic> ids, List<string> includes, List<OrderBy> orderBys);
         List<T> Search(List<T> filters);
         List<T> Search(List<T> filters, List<string> includes);
         List<T> Search(List<T> filters, List<string> includes, List<OrderBy> orderBys);
@@ -29,7 +29,7 @@ namespace EfYou.EntityServices
         T SearchFirst(List<T> filters, List<string> includes, List<OrderBy> orderBys);
         long SearchCount(List<T> filters);
         List<T> Add(List<T> entitiesToAdd);
-        void Delete(List<long> ids);
+        void Delete(List<dynamic> ids);
         void Update(List<T> items);
         List<List<long>> SearchAggregate(List<T> filters, List<string> aggregate);
         List<List<long>> SearchAggregate(List<T> filters, List<string> includes, List<string> aggregate);

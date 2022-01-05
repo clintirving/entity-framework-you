@@ -12,7 +12,7 @@ namespace EfYou.CascadeDelete
 {
     public class CascadeDeleteService<T> : ICascadeDeleteService<T> where T : class, new()
     {
-        public virtual void CascadeDelete(List<long> ids)
+        public virtual void CascadeDelete(List<dynamic> ids)
         {
             // override this method with any cascade delete logic for the specific type.
         }

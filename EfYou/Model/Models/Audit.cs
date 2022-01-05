@@ -27,7 +27,8 @@ namespace EfYou.Model.Models
         [Filter(AllowPartialStringMatch = true)]
         public string Type { get; set; }
 
-        public int TypeId { get; set; }
+        [StringLength(36)]
+        public string TypeId { get; set; }
 
         [Filter(AllowPartialStringMatch = true)]
         public string SerializedEntity { get; set; }

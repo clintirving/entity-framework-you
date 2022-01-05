@@ -12,6 +12,6 @@ namespace EfYou.CascadeDelete
 {
     public interface ICascadeDeleteService<T> where T : class, new()
     {
-        void CascadeDelete(List<long> ids);
+        void CascadeDelete(List<dynamic> ids);
     }
 }

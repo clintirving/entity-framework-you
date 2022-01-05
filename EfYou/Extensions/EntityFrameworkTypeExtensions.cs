@@ -81,14 +81,14 @@ namespace EfYou.Extensions
             return primaryKeyProperties.Single();
         }
 
-        public static List<long> GetIdsFromEntities<T>(this List<T> entities)
+        public static List<dynamic> GetIdsFromEntities<T>(this List<T> entities)
         {
             return entities.Select(GetIdFromEntity).ToList();
         }
 
-        public static long GetIdFromEntity<T>(this T entity)
+        public static dynamic GetIdFromEntity<T>(this T entity)
         {
-            return (long) Convert.ChangeType(entity.GetType().GetPrimaryKeyProperty().GetValue(entity), typeof(long));
+            return entity.GetType().GetPrimaryKeyProperty().GetValue(entity);
         }
     }
 }
