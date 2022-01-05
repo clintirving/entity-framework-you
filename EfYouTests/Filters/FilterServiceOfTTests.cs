@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using EfYou.Filters;
 using EfYou.Model.FilterExtensions;
@@ -36,7 +35,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyChild> { new DummyChild { Id = 1 }, new DummyChild { Id = 2 }, new DummyChild { Id = 3 } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> { 2 });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
 
             // Assert
             Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
@@ -52,7 +51,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> {2});
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> {2});
 
             // Assert
             Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
@@ -68,16 +67,35 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyParent> { new DummyParent { Id = 1 }, new DummyParent { Id = 2 }, new DummyParent { Id = 3 } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> { 2 });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
 
             // Assert
             Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
             Assert.AreEqual(2, results.Single().Id); // The single result should have Id = 2.
         }
 
+        [TestMethod]
+        public void FilterResultsOnGet_PrimaryKeyOfTypeIsGuid_ReturnsQueryableFilteredByGuidIds()
+        {
+            // Arrange
+            var filterService = new Mock<FilterService<DummyEntityWithGuidId>> { CallBase = true };
+            var first = Guid.NewGuid();
+            var second = Guid.NewGuid();
+            var third = Guid.NewGuid();
+
+            var queryable = new List<DummyEntityWithGuidId> { new DummyEntityWithGuidId { Id = first }, new DummyEntityWithGuidId { Id = second }, new DummyEntityWithGuidId { Id = third } }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { second });
+
+            // Assert
+            Assert.AreEqual(1, results.Count()); // Only one result should pass the above defined filter on filter on ids.
+            Assert.AreEqual(second, results.Single().Id); // The single result should have Id = second GUID.
+        }
+
         [ExpectedException(typeof(ApplicationException))]
         [TestMethod]
-        public void FilterResultsOnGet_PrimaryKeyOfTypeIsNoneOfShortOrIntOrLong_ThrowsApplicationException()
+        public void FilterResultsOnGet_PrimaryKeyOfTypeIsNoneOfShortOrIntOrLongOrGuid_ThrowsApplicationException()
         {
             // Arrange
             var filterService = new Mock<FilterService<DummyEntityWithInvalidIdType>> { CallBase = true };
@@ -85,7 +103,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntityWithInvalidIdType> { new DummyEntityWithInvalidIdType { Id = true }, new DummyEntityWithInvalidIdType { Id = false }, new DummyEntityWithInvalidIdType { Id = false } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<long> { 2 });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
 
             // Assert
             // By Exception

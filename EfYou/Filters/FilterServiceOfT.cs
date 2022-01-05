@@ -26,7 +26,7 @@ namespace EfYou.Filters
         private const string OrderByDescending = " DESCENDING";
         private const string OrderBySeparator = ", ";
 
-        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<long> ids)
+        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids)
         {
             return FilterResultsOnIdsFilter(query, ids);
         }
@@ -100,7 +100,7 @@ namespace EfYou.Filters
             return pagedQuery;
         }
 
-        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<long> ids)
+        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids)
         {
             var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
 
@@ -120,10 +120,14 @@ namespace EfYou.Filters
             }
             if (primaryKeyType == typeof(long))
             {
-                return query.Where(containsQuery, ids);
+                return query.Where(containsQuery, ids.Select(x => (long)x).ToList());
+            }
+            if (primaryKeyType == typeof(Guid))
+            {
+                return query.Where(containsQuery, ids.Select(x => (Guid)x).ToList());
             }
 
-            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64.");
+            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64, Guid");
         }
 
         private Type CreateAnonymousType(List<string> groupBys)

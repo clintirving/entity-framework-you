@@ -42,37 +42,37 @@ namespace EfYou.EntityServices
             _scopeOfResponsibilityService = scopeOfResponsibilityService;
         }
 
-        public virtual List<T> Get(List<long> ids)
+        public virtual List<T> Get(List<dynamic> ids)
         {
             return Get(ids, null, null, null);
         }
 
-        public virtual List<T> Get(List<long> ids, List<string> includes)
+        public virtual List<T> Get(List<dynamic> ids, List<string> includes)
         {
             return Get(ids, includes, null, null);
         }
 
-        public virtual List<T> Get(List<long> ids, List<string> includes, List<OrderBy> orderBys)
+        public virtual List<T> Get(List<dynamic> ids, List<string> includes, List<OrderBy> orderBys)
         {
             return Get(ids, includes, orderBys, null);
         }
 
-        public virtual T GetFirst(List<long> ids)
+        public virtual T GetFirst(List<dynamic> ids)
         {
             return GetFirst(ids, null, null);
         }
 
-        public virtual T GetFirst(List<long> ids, List<string> includes)
+        public virtual T GetFirst(List<dynamic> ids, List<string> includes)
         {
             return GetFirst(ids, includes, null);
         }
 
-        public virtual T GetFirst(List<long> ids, List<string> includes, List<OrderBy> orderBys)
+        public virtual T GetFirst(List<dynamic> ids, List<string> includes, List<OrderBy> orderBys)
         {
             return Get(ids, includes, orderBys, _selectTop1).FirstOrDefault();
         }
 
-        public virtual List<T> Get(List<long> ids, List<string> includes, List<OrderBy> orderBys, Paging paging)
+        public virtual List<T> Get(List<dynamic> ids, List<string> includes, List<OrderBy> orderBys, Paging paging)
         {
             _permissionService.Get();
 
@@ -217,7 +217,7 @@ namespace EfYou.EntityServices
             return entitiesToAdd;
         }
 
-        public virtual void Delete(List<long> ids)
+        public virtual void Delete(List<dynamic> ids)
         {
             _permissionService.Delete();
 

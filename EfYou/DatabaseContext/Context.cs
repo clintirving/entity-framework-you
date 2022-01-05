@@ -97,7 +97,7 @@ namespace EfYou.DatabaseContext
                 DateTime = DateTime.UtcNow,
                 Email = _identityService.GetEmail(),
                 Type = entity.GetType().FullName,
-                TypeId = (int) entity.GetIdFromEntity(),
+                TypeId = entity.GetIdFromEntity().ToString(),
                 SerializedEntity = entity.SerializeToXml()
             };
         }
