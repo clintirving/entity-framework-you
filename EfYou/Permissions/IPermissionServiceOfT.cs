@@ -6,6 +6,8 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace EfYou.Permissions
 {
     public interface IPermissionService<T>
@@ -19,5 +21,7 @@ namespace EfYou.Permissions
         void Delete();
 
         void Update();
+
+        bool IsInRoles(List<string> roles);
     }
 }
