@@ -6,6 +6,8 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace EfYou.Permissions
 {
     public class UnrestrictedPermissionServiceOfT<T> : IPermissionService<T>
@@ -28,6 +30,11 @@ namespace EfYou.Permissions
 
         public virtual void Update()
         {
+        }
+
+        public virtual bool IsInRoles(List<string> roles)
+        {
+            return true;
         }
     }
 }
