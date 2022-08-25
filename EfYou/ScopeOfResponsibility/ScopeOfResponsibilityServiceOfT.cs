@@ -59,6 +59,26 @@ namespace EfYou.ScopeOfResponsibility
             return query;
         }
 
+        public virtual void ClearLoginCache()
+        {
+            lock (_loginCache)
+            {
+                _loginCache.Clear();
+                _loginCacheLastDumped = DateTime.UtcNow;
+            }
+        }
+
+        public virtual void ClearLoginCacheForEmail(string email)
+        {
+            lock (_loginCache)
+            {
+                if (_loginCache.ContainsKey(email))
+                {
+                    _loginCache.Remove(email);
+                }
+            }
+        }
+
         public abstract bool RestrictScopeOfResponsibilityOnLoginConfiguration(out List<int> ids);
 
         public virtual Login GetLoginForLoggedInUser()
@@ -66,7 +86,6 @@ namespace EfYou.ScopeOfResponsibility
             var email = _identityService.GetEmail();
 
             Login login;
-
 
             lock (_loginCache)
             {
