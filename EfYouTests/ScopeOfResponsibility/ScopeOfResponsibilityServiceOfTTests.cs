@@ -156,5 +156,45 @@ namespace EfYouTests.ScopeOfResponsibility
             // Assert
             Assert.AreEqual(firstEntity, result.Single());
         }
+
+        [TestMethod]
+        public void ClearLoginCache_NextCallToGetLoginForLoggedInUserWillRefreshFromDb()
+        {
+            // Arrange
+            var login = new Login { Email = "email@email.com" };
+
+            SetMockLoginData(new List<Login> { login });
+
+            // Act
+            var result = _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+            _context.Verify(x => x.Set<Login>(), () => Times.Exactly(1));   // Make sure we've hit the DB once to initially cache the login
+            _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+            _context.Verify(x => x.Set<Login>(), () => Times.Exactly(1));   // No hit to the DB unless we clear the cache
+            _scopeOfResponsibilityService.Object.ClearLoginCache();                             // clear the cache
+            _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+
+            // Assert
+            _context.Verify(x => x.Set<Login>(), () => Times.Exactly(2));   // Check we hit the DB since we've cleared the cache
+        }
+
+        [TestMethod]
+        public void ClearLoginCacheForEmail_NextCallToGetLoginForLoggedInUserWillRefreshFromDb()
+        {
+            // Arrange
+            var login = new Login { Email = "email@email.com" };
+
+            SetMockLoginData(new List<Login> { login });
+
+            // Act
+            var result = _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+            _context.Verify(x => x.Set<Login>(), () => Times.Exactly(1));   // Make sure we've hit the DB once to initially cache the login
+            _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+            _context.Verify(x => x.Set<Login>(), () => Times.Exactly(1));   // No hit to the DB unless we clear the cache
+            _scopeOfResponsibilityService.Object.ClearLoginCacheForEmail(login.Email);          // clear the cache for this email
+            _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+
+            // Assert
+            _context.Verify(x => x.Set<Login>(), () => Times.Exactly(2));   // Check we hit the DB since we've cleared the cache
+        }
     }
 }
