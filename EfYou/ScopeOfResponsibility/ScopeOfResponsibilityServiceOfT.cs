@@ -37,7 +37,7 @@ namespace EfYou.ScopeOfResponsibility
             _log = log;
         }
 
-        protected virtual TimeSpan LoginCacheDumpInterval => TimeSpan.FromMinutes(5);
+        public virtual TimeSpan LoginCacheDumpInterval => TimeSpan.MinValue;
 
         public virtual IQueryable<T> FilterResultOnCurrentPrincipal(IQueryable<T> query)
         {
@@ -79,6 +79,21 @@ namespace EfYou.ScopeOfResponsibility
             }
         }
 
+        public virtual void UpdateLoginCacheForLogin(Login login)
+        {
+            lock (_loginCache)
+            {
+                if (_loginCache.ContainsKey(login.Email))
+                {
+                    _loginCache[login.Email] = login;
+                }
+                else
+                {
+                    _loginCache.Add(login.Email, login);
+                }
+            }
+        }
+
         public abstract bool RestrictScopeOfResponsibilityOnLoginConfiguration(out List<int> ids);
 
         public virtual Login GetLoginForLoggedInUser()
@@ -98,27 +113,35 @@ namespace EfYou.ScopeOfResponsibility
 
             lock (_loginCache)
             {
-                if (_loginCache.ContainsKey(email))
+                if (!_loginCache.ContainsKey(email))
                 {
-                    login = _loginCache[email];
+                    login = FetchLoginFromDatabase(email);
+
+                    if (login == null)
+                    {
+                        throw new SecurityException("The currently logged in user has no Login entity assigned.");
+                    }
+
+                    UpdateLoginCacheForLogin(login);
                 }
                 else
                 {
-                    using (var context = _contextFactory.Create())
-                    {
-                        login = context.Set<Login>()
-                            .Where(x => x.Email == email)
-                            .Include("LoginPermissions")
-                            .Include("LoginPermissions.LoginPermissionItems").FirstOrDefault();
-
-                        _loginCache.Add(email, login);
-                    }
+                    login = _loginCache[email];
                 }
             }
 
-            if (login == null)
+            return login;
+        }
+
+        private Login FetchLoginFromDatabase(string email)
+        {
+            Login login;
+            using (var context = _contextFactory.Create())
             {
-                throw new SecurityException("The currently logged in user has no Login entity assigned.");
+                login = context.Set<Login>()
+                    .Where(x => x.Email == email)
+                    .Include("LoginPermissions")
+                    .Include("LoginPermissions.LoginPermissionItems").FirstOrDefault();
             }
 
             return login;
