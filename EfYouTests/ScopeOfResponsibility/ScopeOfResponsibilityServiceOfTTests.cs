@@ -6,6 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
@@ -55,6 +56,8 @@ namespace EfYouTests.ScopeOfResponsibility
 
             _scopeOfResponsibilityService =
                 new Mock<ScopeOfResponsibilityServiceOfT<DummyEntity>>(_contextFactory.Object, _identityService.Object, _log.Object) {CallBase = true};
+
+            _scopeOfResponsibilityService.Setup(x => x.LoginCacheDumpInterval).Returns(TimeSpan.FromDays(1));
         }
 
         private void SetMockLoginData(IEnumerable<Login> data)
@@ -89,7 +92,7 @@ namespace EfYouTests.ScopeOfResponsibility
             _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
 
             // Assert
-            // By Exepected Exception
+            // By Expected Exception
         }
 
         [TestMethod]
@@ -103,7 +106,7 @@ namespace EfYouTests.ScopeOfResponsibility
             _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
 
             // Assert
-            // By Exepected Exception
+            // By Expected Exception
         }
 
         [TestMethod]
@@ -195,6 +198,24 @@ namespace EfYouTests.ScopeOfResponsibility
 
             // Assert
             _context.Verify(x => x.Set<Login>(), () => Times.Exactly(2));   // Check we hit the DB since we've cleared the cache
+        }
+
+        [TestMethod]
+        public void UpdateLoginCacheForLogin_ConsecutiveCallsToGetLoginForLoggedInUserReturnSetLogin()
+        {
+            // Arrange
+            var login = new Login { Email = "email@email.com", LoginPermissions = new List<LoginPermission> { new LoginPermission { FullAccess = true } } };
+
+            SetMockLoginData(new List<Login> { login });
+
+            // Act
+            var before = _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+            _scopeOfResponsibilityService.Object.UpdateLoginCacheForLogin(new Login { Email = "email@email.com" , LoginPermissions = new List<LoginPermission> { new LoginPermission { FullAccess = false } } });
+            var after = _scopeOfResponsibilityService.Object.GetLoginForLoggedInUser();
+
+            // Assert
+            Assert.AreEqual(true, before.LoginPermissions.Single().FullAccess);
+            Assert.AreEqual(false, after.LoginPermissions.Single().FullAccess);
         }
     }
 }
