@@ -10,5 +10,6 @@ namespace EfYou.ScopeOfResponsibility
         void ClearLoginCacheForEmail(string email);
         void UpdateLoginCacheForLogin(Login login);
         Login GetLoginForLoggedInUser();
+        bool TryGetLoginForLoggedInUser(out Login login);
     }
 }

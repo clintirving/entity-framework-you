@@ -62,9 +62,17 @@ namespace EfYou.ScopeOfResponsibility
 
         public virtual Login GetLoginForLoggedInUser()
         {
-            var email = _identityService.GetEmail();
+            if (!TryGetLoginForLoggedInUser(out var login))
+            {
+                throw new SecurityException("The currently logged in user has no Login entity assigned.");
+            }
 
-            Login login;
+            return login;
+        }
+
+        public virtual bool TryGetLoginForLoggedInUser(out Login login)
+        {
+            var email = _identityService.GetEmail();
 
             lock (_loginCache)
             {
@@ -81,12 +89,10 @@ namespace EfYou.ScopeOfResponsibility
                 {
                     login = FetchLoginFromDatabase(email);
 
-                    if (login == null)
+                    if (login != null)
                     {
-                        throw new SecurityException("The currently logged in user has no Login entity assigned.");
+                        UpdateLoginCacheForLogin(login);
                     }
-
-                    UpdateLoginCacheForLogin(login);
                 }
                 else
                 {
@@ -94,7 +100,7 @@ namespace EfYou.ScopeOfResponsibility
                 }
             }
 
-            return login;
+            return login != null;
         }
 
         protected  virtual Login FetchLoginFromDatabase(string email)

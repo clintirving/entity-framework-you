@@ -77,6 +77,20 @@ namespace EfYouTests.ScopeOfResponsibility
             queryable.Setup(x => x.GetEnumerator()).Returns(mockDataQueryable.GetEnumerator());
         }
 
+
+        [TestMethod]
+        public void TryGetLoginForLoggedInUser_NoLoginsInDb_ReturnsFalseAndOutputLoginIsNull()
+        {
+            // Arrange
+
+            // Act
+            var result = _loginCache.Object.TryGetLoginForLoggedInUser(out var login);
+
+            // Assert
+            Assert.IsFalse(result);
+            Assert.IsNull(login);
+        }
+
         [TestMethod]
         [ExpectedException(typeof(SecurityException))]
         public void GetLoginForLoggedInUser_NoLoginsInDb_ThrowsSecurityException()
