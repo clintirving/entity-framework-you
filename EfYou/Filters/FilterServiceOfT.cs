@@ -385,13 +385,16 @@ namespace EfYou.Filters
             if (!string.IsNullOrEmpty(propertyValue))
             {
                 var filterAttribute = filterProperty.GetCustomAttribute<FilterAttribute>();
-                if (filterAttribute != null && filterAttribute.AllowPartialStringMatch)
+                var partialStringMatch = filterAttribute != null && filterAttribute.AllowPartialStringMatch;
+                var forceCaseInsensitiveMatch = filterAttribute != null && filterAttribute.ForceCaseInsensitiveMatch;
+
+                if (partialStringMatch)
                 {
-                    query = ApplyStringLikeFilterToQuery(query, filterProperty, propertyValue);
+                    query = ApplyStringLikeFilterToQuery(query, filterProperty, propertyValue, forceCaseInsensitiveMatch);
                 }
                 else
                 {
-                    query = ApplyStringEqualityFilterToQuery(query, filterProperty, propertyValue);
+                    query = ApplyStringEqualityFilterToQuery(query, filterProperty, propertyValue, forceCaseInsensitiveMatch);
                 }
             }
 
@@ -464,28 +467,51 @@ namespace EfYou.Filters
             return query;
         }
 
-        private IQueryable<T> ApplyStringEqualityFilterToQuery(IQueryable<T> query, PropertyInfo filterProperty, string propertyValue)
+        private IQueryable<T> ApplyStringEqualityFilterToQuery(IQueryable<T> query, PropertyInfo filterProperty, string propertyValue, bool forceCaseInsensitiveMatch)
         {
             var e = Expression.Parameter(typeof(T), "e");
             var m = Expression.MakeMemberAccess(e, filterProperty);
-            var l = Expression.Call(m, typeof(string).GetMethod("ToLower", Type.EmptyTypes));
-            var c = Expression.Constant(propertyValue.ToLowerInvariant(), typeof(string));
-            var b = Expression.Equal(l, c);
 
-            var lambda = Expression.Lambda<Func<T, bool>>(b, e);
-            query = query.Where(lambda);
+            if (forceCaseInsensitiveMatch)
+            {
+                var l = Expression.Call(m, typeof(string).GetMethod("ToLower", Type.EmptyTypes));
+                var c = Expression.Constant(propertyValue.ToLowerInvariant(), typeof(string));
+                var b = Expression.Equal(l, c);
+                var lambda = Expression.Lambda<Func<T, bool>>(b, e);
+                query = query.Where(lambda);
+            }
+            else
+            {
+                var c = Expression.Constant(propertyValue, typeof(string));
+                var b = Expression.Equal(m, c);
+                var lambda = Expression.Lambda<Func<T, bool>>(b, e);
+                query = query.Where(lambda);
+            }
+
             return query;
         }
 
-        private IQueryable<T> ApplyStringLikeFilterToQuery(IQueryable<T> query, PropertyInfo filterProperty, string propertyValue)
+        private IQueryable<T> ApplyStringLikeFilterToQuery(IQueryable<T> query, PropertyInfo filterProperty, string propertyValue, bool forceCaseInsensitiveMatch)
         {
             var e = Expression.Parameter(typeof(T), "e");
             var m = Expression.MakeMemberAccess(e, filterProperty);
-            var l = Expression.Call(m, typeof(string).GetMethod("ToLower", Type.EmptyTypes));
-            var c = Expression.Constant(propertyValue.ToLowerInvariant(), typeof(string));
-            var condition = Expression.Call(l, typeof(string).GetMethod("Contains", new Type[] {typeof(string)}), c);
-            var lambda = Expression.Lambda<Func<T, bool>>(condition, e);
-            query = query.Where(lambda);
+
+            if (forceCaseInsensitiveMatch)
+            {
+                var l = Expression.Call(m, typeof(string).GetMethod("ToLower", Type.EmptyTypes));
+                var c = Expression.Constant(propertyValue.ToLowerInvariant(), typeof(string));
+                var condition = Expression.Call(l, typeof(string).GetMethod("Contains", new Type[] { typeof(string) }), c);
+                var lambda = Expression.Lambda<Func<T, bool>>(condition, e);
+                query = query.Where(lambda);
+            }
+            else
+            {
+                var c = Expression.Constant(propertyValue, typeof(string));
+                var condition = Expression.Call(m, typeof(string).GetMethod("Contains", new Type[] { typeof(string) }), c);
+                var lambda = Expression.Lambda<Func<T, bool>>(condition, e);
+                query = query.Where(lambda);
+            }
+            
             return query;
         }
 

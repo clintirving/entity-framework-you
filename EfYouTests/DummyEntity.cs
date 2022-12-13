@@ -64,11 +64,17 @@ namespace EfYouTests
 
         public virtual List<DummyChild> DummyChildren { get; set; }
 
-        [Filter(AllowPartialStringMatch = true)]
-        public string PartialMatchingString { get; set; }
+        [Filter(AllowPartialStringMatch = true, ForceCaseInsensitiveMatch = true)]
+        public string PartialMatchingAndForceCaseInsensitiveMatchString { get; set; }
 
-        [Filter(AllowPartialStringMatch = false)]
-        public string NotPartialMatchingString { get; set; }
+        [Filter(AllowPartialStringMatch = false, ForceCaseInsensitiveMatch = true)]
+        public string NotPartialMatchingAndForceCaseInsensitiveMatchString { get; set; }
+
+        [Filter(AllowPartialStringMatch = true, ForceCaseInsensitiveMatch = false)]
+        public string PartialMatchingAndNotForceCaseInsensitiveMatchString { get; set; }
+
+        [Filter(AllowPartialStringMatch = false, ForceCaseInsensitiveMatch = false)]
+        public string NotPartialMatchingAndNotForceCaseInsensitiveMatchString { get; set; }
 
         [FilterExtensions] public DummyFilterExtensions DummyFilterExtensions { get; set; }
 

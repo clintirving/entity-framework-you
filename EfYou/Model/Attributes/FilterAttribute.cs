@@ -14,5 +14,7 @@ namespace EfYou.Model.Attributes
     public class FilterAttribute : Attribute
     {
         public bool AllowPartialStringMatch { get; set; }
+
+        public bool ForceCaseInsensitiveMatch { get; set; }
     }
 }
