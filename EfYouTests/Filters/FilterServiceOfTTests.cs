@@ -392,7 +392,7 @@ namespace EfYouTests.Filters
                 {new DummyEntity {Name = "DEF", Id = 5}, new DummyEntity {Name = "DEFG", Id = 9}, new DummyEntity {Name = "XYZ"}}.AsQueryable();
 
             // Act
-            var results = filterService.Object.AutoFilter(queryable, new DummyEntity {Name = "Def"});
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity {Name = "DEF" });
 
             // Assert
             Assert.AreEqual(1, results.Count());
@@ -655,36 +655,72 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AutoFilter_StringPropertyOnFilterWithAttributeAllowPartialStringMatch_ReturnsResultsThatContainTheFilterStringCaseInsensitive()
+        public void AutoFilter_StringPropertyOnFilterWithAttributeAllowPartialStringMatchAndForceCaseInsensitiveMatch_ReturnsResultsThatContainTheFilterStringCaseInsensitive()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
             var queryable = new List<DummyEntity>
             {
-                new DummyEntity {PartialMatchingString = "Test"}, new DummyEntity {PartialMatchingString = "teST123"},
-                new DummyEntity {PartialMatchingString = "tes"}
+                new DummyEntity {PartialMatchingAndForceCaseInsensitiveMatchString = "Test"}, new DummyEntity {PartialMatchingAndForceCaseInsensitiveMatchString = "teST123"},
+                new DummyEntity {PartialMatchingAndForceCaseInsensitiveMatchString = "tes"}
             }.AsQueryable();
 
             // Act
-            var results = filterService.Object.AutoFilter(queryable, new DummyEntity {PartialMatchingString = "test"});
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { PartialMatchingAndForceCaseInsensitiveMatchString = "test"});
 
             // Assert
             Assert.AreEqual(2, results.Count());
         }
 
         [TestMethod]
-        public void AutoFilter_StringPropertyOnFilterWithAttributeAllowPartialStringMatchFalse_OnlyReturnsExactMatchesCaseInsensitive()
+        public void AutoFilter_StringPropertyOnFilterWithAttributeAllowPartialStringMatchFalseAndForceCaseInsensitiveMatch_OnlyReturnsExactMatchesCaseInsensitive()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
             var queryable = new List<DummyEntity>
             {
-                new DummyEntity {NotPartialMatchingString = "Tes"}, new DummyEntity {NotPartialMatchingString = "teST123"},
-                new DummyEntity {NotPartialMatchingString = "Test"}
+                new DummyEntity {NotPartialMatchingAndForceCaseInsensitiveMatchString = "Tes"}, new DummyEntity {NotPartialMatchingAndForceCaseInsensitiveMatchString = "teST123"},
+                new DummyEntity {NotPartialMatchingAndForceCaseInsensitiveMatchString = "Test"}
             }.AsQueryable();
 
             // Act
-            var results = filterService.Object.AutoFilter(queryable, new DummyEntity {NotPartialMatchingString = "test"});
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { NotPartialMatchingAndForceCaseInsensitiveMatchString = "test"});
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+        [TestMethod]
+        public void AutoFilter_StringPropertyOnFilterWithAttributeAllowPartialStringMatchAndForceCaseInsensitiveMatchFalse_ReturnsResultsThatContainTheFilterStringCaseInsensitive()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {PartialMatchingAndNotForceCaseInsensitiveMatchString = "Test"}, new DummyEntity {PartialMatchingAndNotForceCaseInsensitiveMatchString = "tesT123"},
+                new DummyEntity {PartialMatchingAndNotForceCaseInsensitiveMatchString = "test"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { PartialMatchingAndNotForceCaseInsensitiveMatchString = "tes" });
+
+            // Assert
+            Assert.AreEqual(2, results.Count());
+        }
+
+        [TestMethod]
+        public void AutoFilter_StringPropertyOnFilterWithAttributeAllowPartialStringMatchFalseAndForceCaseInsensitiveMatchFalse_OnlyReturnsExactMatchesCaseInsensitive()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {NotPartialMatchingAndNotForceCaseInsensitiveMatchString = "Test"}, new DummyEntity {NotPartialMatchingAndNotForceCaseInsensitiveMatchString = "teST123"},
+                new DummyEntity {NotPartialMatchingAndNotForceCaseInsensitiveMatchString = "test"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { NotPartialMatchingAndNotForceCaseInsensitiveMatchString = "test" });
 
             // Assert
             Assert.AreEqual(1, results.Count());
