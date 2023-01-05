@@ -20,16 +20,16 @@ namespace EfYou.Security.Models
         [XmlIgnore] public virtual List<LoginPermission> LoginPermissions { get; set; }
 
         [DefaultValue(Value = "")]
-        [Required(AllowEmptyStrings = true)]
+        [DbRequired(AllowEmptyStrings = true)]
         [Filter(AllowPartialStringMatch = true)]
         public string Username { get; set; }
 
         [DefaultValue(Value = "")]
-        [Required(AllowEmptyStrings = true)]
+        [DbRequired(AllowEmptyStrings = true)]
         public string Email { get; set; }
 
         [DefaultValue(Value = "")]
-        [Required(AllowEmptyStrings = true)]
+        [DbRequired(AllowEmptyStrings = true)]
         public string MobileNumber { get; set; }
 
         [XmlIgnore] public virtual LoginReset LoginReset { get; set; }

@@ -6,6 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using EfYou.Model.Attributes;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
@@ -14,11 +15,11 @@ namespace EfYou.Security.Models
 {
     public class LoginPermission
     {
-        [Required(AllowEmptyStrings = false)] public bool? FullAccess { get; set; }
+        [DbRequired(AllowEmptyStrings = false)] public bool? FullAccess { get; set; }
 
         [XmlIgnore] public virtual List<LoginPermissionItem> LoginPermissionItems { get; set; }
 
-        [Required(AllowEmptyStrings = false)] public string Type { get; set; }
+        [DbRequired(AllowEmptyStrings = false)] public string Type { get; set; }
 
         [XmlIgnore] public virtual Login Login { get; set; }
 
