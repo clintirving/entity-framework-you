@@ -42,6 +42,11 @@ namespace EfYou.EntityServices
             _scopeOfResponsibilityService = scopeOfResponsibilityService;
         }
 
+        /// <summary>
+        /// If True DELETE skips Audit regardless of whether AuditMe is specified on the Entity and deletes directly in the DB with a SQL Command.
+        /// </summary>
+        public virtual bool UseBulkDelete { get; }
+
         public virtual List<T> Get(List<dynamic> ids)
         {
             return Get(ids, null, null, null);
@@ -228,24 +233,13 @@ namespace EfYou.EntityServices
             {
                 _cascadeDeletionService.CascadeDelete(entitiesToDelete.GetIdsFromEntities());
 
-                using (var context = _contextFactory.Create())
+                if (UseBulkDelete)
                 {
-                    var dbSet = context.Set<T>();
-
-                    foreach (var entityToDelete in entitiesToDelete)
-                    {
-                        dbSet.Attach(entityToDelete);
-                        context.SetState(entityToDelete, EntityState.Deleted);
-                    }
-
-                    try
-                    {
-                        context.SaveChanges();
-                    }
-                    catch (DbEntityValidationException exception)
-                    {
-                        WrapValidationException(exception);
-                    }
+                    DeleteUsingBulkDelete(entitiesToDelete);
+                }
+                else
+                {
+                    DeleteUsingEntityFramework(entitiesToDelete);
                 }
             }
         }
@@ -362,6 +356,40 @@ namespace EfYou.EntityServices
                                                        x =>
                                                            string.Format("Property: {0}, Error: {1}", x.PropertyName,
                                                                x.ErrorMessage))));
+        }
+
+        protected virtual void DeleteUsingEntityFramework(List<T> entitiesToDelete)
+        {
+            using (var context = _contextFactory.Create())
+            {
+                var dbSet = context.Set<T>();
+
+                foreach (var entityToDelete in entitiesToDelete)
+                {
+                    dbSet.Attach(entityToDelete);
+                    context.SetState(entityToDelete, EntityState.Deleted);
+                }
+
+                try
+                {
+                    context.SaveChanges();
+                }
+                catch (DbEntityValidationException exception)
+                {
+                    WrapValidationException(exception);
+                }
+            }
+        }
+
+        protected virtual void DeleteUsingBulkDelete(List<T> entitiesToDelete)
+        {
+            using (var context = _contextFactory.Create())
+            {
+                var idsToDelete = string.Join(",", entitiesToDelete.Select(x => x.GetIdFromEntity()).ToList());
+                var entityTableName = typeof(T).GetTableName(context);
+                var tsql = $"DELETE FROM {entityTableName} WHERE {typeof(T).GetPrimaryKeyProperty().Name} IN ({idsToDelete})";
+                context.DatabaseAccessor.ExecuteSqlCommand(tsql);
+            }
         }
     }
 }

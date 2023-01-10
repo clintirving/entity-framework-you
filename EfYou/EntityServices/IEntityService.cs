@@ -36,5 +36,6 @@ namespace EfYou.EntityServices
         List<List<long>> SearchAggregate(List<T> filters, List<string> includes, List<OrderBy> orderBys, List<string> aggregate);
         List<List<long>> SearchAggregate(List<T> filters, List<string> includes, List<OrderBy> orderBys, Paging paging, List<string> groupBys);
         long SearchAggregateCount(List<T> filters, List<string> groupBys);
+        bool UseBulkDelete { get; }
     }
 }
