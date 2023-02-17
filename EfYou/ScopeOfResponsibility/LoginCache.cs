@@ -17,9 +17,9 @@ namespace EfYou.ScopeOfResponsibility
         private DateTime _loginCacheLastDumped = DateTime.MinValue;
         public virtual TimeSpan LoginCacheDumpInterval => TimeSpan.MaxValue;
 
-        private readonly Dictionary<string, Login> _loginCache = new Dictionary<string, Login>();
+        private readonly Dictionary<string, Login> _loginCache = new Dictionary<string, Login>(StringComparer.OrdinalIgnoreCase);
 
-        public LoginCache(ISecurityContextFactory contextFactory,IIdentityService identityService)
+        public LoginCache(ISecurityContextFactory contextFactory, IIdentityService identityService)
         {
             _contextFactory = contextFactory;
             _identityService = identityService;
@@ -103,13 +103,13 @@ namespace EfYou.ScopeOfResponsibility
             return login != null;
         }
 
-        protected  virtual Login FetchLoginFromDatabase(string email)
+        protected virtual Login FetchLoginFromDatabase(string email)
         {
             Login login;
             using (var context = _contextFactory.Create())
             {
                 login = context.Set<Login>()
-                    .Where(x => x.Email == email)
+                    .Where(x => x.Email.Equals(email, StringComparison.OrdinalIgnoreCase))
                     .Include("LoginPermissions")
                     .Include("LoginPermissions.LoginPermissionItems").FirstOrDefault();
             }
