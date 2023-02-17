@@ -52,7 +52,7 @@ namespace EfYouTests.ScopeOfResponsibility
             _identityService.Setup(x => x.GetEmail()).Returns("email@email.com");
 
             _loginCache =
-                new Mock<LoginCache>(_contextFactory.Object, _identityService.Object) {CallBase = true};
+                new Mock<LoginCache>(_contextFactory.Object, _identityService.Object) { CallBase = true };
         }
 
         private void SetMockLoginData(IEnumerable<Login> data)
@@ -91,6 +91,24 @@ namespace EfYouTests.ScopeOfResponsibility
             Assert.IsNull(login);
         }
 
+
+        [TestMethod]
+        public void GetLoginForLoggedInUser_ExistingLoginInCacheWithDifferentCapitalization_MatchesCaseInsensitiveOnExisting()
+        {
+            // Arrange
+            var login = new Login { Email = "EMAIL@eMAil.coM" };
+
+            SetMockLoginData(new List<Login> { login });
+
+            // Act
+            var loginReturned = _loginCache.Object.GetLoginForLoggedInUser();
+            var loginReturned2 = _loginCache.Object.GetLoginForLoggedInUser();
+
+            // Assert
+            Assert.AreEqual(login, loginReturned);
+            Assert.AreEqual(loginReturned, loginReturned2);
+        }
+
         [TestMethod]
         [ExpectedException(typeof(SecurityException))]
         public void GetLoginForLoggedInUser_NoLoginsInDb_ThrowsSecurityException()
@@ -109,7 +127,7 @@ namespace EfYouTests.ScopeOfResponsibility
         public void GetLoginForLoggedInUser_NoLoginWithMatchingEmailInDb_ThrowsSecurityException()
         {
             // Arrange
-            SetMockLoginData(new List<Login> {new Login {Email = "NotAMatch@email.com"}});
+            SetMockLoginData(new List<Login> { new Login { Email = "NotAMatch@email.com" } });
 
             // Act
             _loginCache.Object.GetLoginForLoggedInUser();
@@ -122,9 +140,9 @@ namespace EfYouTests.ScopeOfResponsibility
         public void GetLoginForLoggedInUser_LoginWithMatchingEmailInDb_ReturnsLogin()
         {
             // Arrange
-            var login = new Login {Email = "email@email.com"};
+            var login = new Login { Email = "email@email.com" };
 
-            SetMockLoginData(new List<Login> {login});
+            SetMockLoginData(new List<Login> { login });
 
             // Act
             var loginReturned = _loginCache.Object.GetLoginForLoggedInUser();
@@ -184,7 +202,7 @@ namespace EfYouTests.ScopeOfResponsibility
 
             // Act
             var before = _loginCache.Object.GetLoginForLoggedInUser();
-            _loginCache.Object.UpdateLoginCacheForLogin(new Login { Email = "email@email.com" , LoginPermissions = new List<LoginPermission> { new LoginPermission { FullAccess = false } } });
+            _loginCache.Object.UpdateLoginCacheForLogin(new Login { Email = "email@email.com", LoginPermissions = new List<LoginPermission> { new LoginPermission { FullAccess = false } } });
             var after = _loginCache.Object.GetLoginForLoggedInUser();
 
             // Assert
