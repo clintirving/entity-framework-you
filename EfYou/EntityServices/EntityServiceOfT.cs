@@ -8,8 +8,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Validation;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using EfYou.CascadeDelete;
 using EfYou.DatabaseContext;
@@ -209,14 +208,8 @@ namespace EfYou.EntityServices
                 var dbSet = context.Set<T>();
                 dbSet.AddRange(entitiesToAdd);
 
-                try
-                {
-                    context.SaveChanges();
-                }
-                catch (DbEntityValidationException exception)
-                {
-                    WrapValidationException(exception);
-                }
+                context.SaveChanges(true);
+ 
             }
 
             return entitiesToAdd;
@@ -266,14 +259,7 @@ namespace EfYou.EntityServices
                     context.SetState(entity, EntityState.Modified);
                 }
 
-                try
-                {
-                    context.SaveChanges();
-                }
-                catch (DbEntityValidationException exception)
-                {
-                    WrapValidationException(exception);
-                }
+                context.SaveChanges(true);
             }
         }
 
@@ -347,17 +333,6 @@ namespace EfYou.EntityServices
             return completeQuery;
         }
 
-        protected virtual void WrapValidationException(DbEntityValidationException exception)
-        {
-            throw new ApplicationException("Validation errors have occurred. " +
-                                           string.Join("; ",
-                                               exception.EntityValidationErrors.SelectMany(x => x.ValidationErrors)
-                                                   .Select(
-                                                       x =>
-                                                           string.Format("Property: {0}, Error: {1}", x.PropertyName,
-                                                               x.ErrorMessage))));
-        }
-
         protected virtual void DeleteUsingEntityFramework(List<T> entitiesToDelete)
         {
             using (var context = _contextFactory.Create())
@@ -368,16 +343,9 @@ namespace EfYou.EntityServices
                 {
                     dbSet.Attach(entityToDelete);
                     context.SetState(entityToDelete, EntityState.Deleted);
-                }
-
-                try
-                {
-                    context.SaveChanges();
-                }
-                catch (DbEntityValidationException exception)
-                {
-                    WrapValidationException(exception);
-                }
+                } 
+                
+                context.SaveChanges(true);
             }
         }
 

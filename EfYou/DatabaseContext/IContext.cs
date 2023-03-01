@@ -7,31 +7,30 @@
 // // -----------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace EfYou.DatabaseContext
 {
     public interface IContext : IDisposable
     {
         IDatabaseAccessor DatabaseAccessor { get; }
-        DbChangeTracker ChangeTracker { get; }
-        DbContextConfiguration Configuration { get; }
+        ChangeTracker ChangeTracker { get; }
         DbSet<TEntity> Set<TEntity>() where TEntity : class;
-        DbSet Set(Type entityType);
         int SaveChanges();
-        Task<int> SaveChangesAsync();
+        int SaveChanges(bool acceptAllChangesOnSuccess);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-        IEnumerable<DbEntityValidationResult> GetValidationErrors();
-        DbEntityEntry Entry(object entity);
+        Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken);
+        EntityEntry Entry(object entity);
         string ToString();
         bool Equals(object obj);
         int GetHashCode();
         Type GetType();
         void SetState(object entity, EntityState state);
+        IModel Model { get; }
+
     }
 }

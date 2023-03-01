@@ -7,7 +7,7 @@
 // // -----------------------------------------------------------------------
 
 using System.Data.Common;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +16,6 @@ namespace EfYou.DatabaseContext
     public interface IDatabaseAccessor
     {
         string DatabaseName { get; }
-
         DbConnection Connection { get; }
 
         /// <summary>
@@ -50,12 +49,12 @@ namespace EfYou.DatabaseContext
         ///     context.Database.ExecuteSqlCommand("UPDATE dbo.Posts SET Rating = 5 WHERE Author = @author", new
         ///     SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
-        /// <param name="transactionalBehavior"> Controls the creation of a transaction for this command. </param>
+        /// <param name="transaction"> Controls if a transaction will wrap the command. </param>
         /// <param name="sql"> The command string. </param>
         /// <param name="parameters"> The parameters to apply to the command string. </param>
         /// <returns> The result returned by the database after executing the command. </returns>
         int ExecuteSqlCommand(
-            TransactionalBehavior transactionalBehavior,
+            bool transaction,
             string sql,
             params object[] parameters);
 
@@ -99,7 +98,7 @@ namespace EfYou.DatabaseContext
         ///     Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
         ///     that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
-        /// <param name="transactionalBehavior"> Controls the creation of a transaction for this command. </param>
+        /// <param name="transaction"> Controls if a transaction will wrap the command. </param>
         /// <param name="sql"> The command string. </param>
         /// <param name="parameters"> The parameters to apply to the command string. </param>
         /// <returns>
@@ -107,7 +106,7 @@ namespace EfYou.DatabaseContext
         ///     The task result contains the result returned by the database after executing the command.
         /// </returns>
         Task<int> ExecuteSqlCommandAsync(
-            TransactionalBehavior transactionalBehavior,
+            bool transaction,
             string sql,
             params object[] parameters);
 
@@ -157,7 +156,7 @@ namespace EfYou.DatabaseContext
         ///     Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
         ///     that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
-        /// <param name="transactionalBehavior"> Controls the creation of a transaction for this command. </param>
+        /// <param name="transaction"> Controls if a transaction will wrap the command. </param>
         /// <param name="sql"> The command string. </param>
         /// <param name="cancellationToken">
         ///     A <see cref="T:System.Threading.CancellationToken" /> to observe while waiting for the task to complete.
@@ -168,7 +167,7 @@ namespace EfYou.DatabaseContext
         ///     The task result contains the result returned by the database after executing the command.
         /// </returns>
         Task<int> ExecuteSqlCommandAsync(
-            TransactionalBehavior transactionalBehavior,
+            bool transaction,
             string sql,
             CancellationToken cancellationToken,
             params object[] parameters);

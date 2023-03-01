@@ -8,10 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration.Conventions;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using EfYou.Extensions;
 using EfYou.Model.Attributes;
 using EfYou.Model.Enumerations;
@@ -19,6 +19,7 @@ using EfYou.Model.Models;
 using EfYou.Security.User;
 using EfYou.Utilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace EfYou.DatabaseContext
 {
@@ -26,26 +27,42 @@ namespace EfYou.DatabaseContext
     {
         private readonly IIdentityService _identityService;
         private readonly ILogger _log;
+        private IDatabaseAccessor _databaseAccessor;
 
-        public Context(string databaseName, IIdentityService identityService, ILogger log)
-            : this(databaseName)
+        public Context(DbContextOptions dbContextOptions, IIdentityService identityService, ILogger log)
+            : this(dbContextOptions)
         {
             _identityService = identityService;
             _log = log;
-            DatabaseAccessor = new DatabaseAccessor(Database);
         }
 
-        public Context(string databaseName)
-            : base(databaseName)
+        public Context(DbContextOptions dbContextOptions)
+            : base(dbContextOptions)
         {
-            Configuration.ProxyCreationEnabled = false;
+        }
+
+        public IDatabaseAccessor DatabaseAccessor
+        {
+            get { return _databaseAccessor ??= new DatabaseAccessor(Database); }
         }
 
         public virtual DbSet<Audit> Audits { get; set; }
 
-        public IDatabaseAccessor DatabaseAccessor { get; }
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new())
+        {
+            DetectChangesAndSaveAudit();
 
-        public override int SaveChanges()
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            DetectChangesAndSaveAudit();
+
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        private void DetectChangesAndSaveAudit()
         {
             ChangeTracker.DetectChanges();
 
@@ -55,24 +72,26 @@ namespace EfYou.DatabaseContext
             var result = base.SaveChanges();
 
             SaveAudit(changedEntities, originalStates);
-
-            return result;
         }
+
 
         public void SetState(object entity, EntityState state)
         {
             Entry(entity).State = state;
         }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Conventions.Add<ForeignKeyNamingConvention>();
-            modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
-            modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
+            foreach (var foreignKey in modelBuilder.Model.GetEntityTypes().SelectMany(x => x.GetForeignKeys())
+                         .Where(x => !x.IsOwnership && x.DeleteBehavior == DeleteBehavior.Cascade))
+            {
+                foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+
             base.OnModelCreating(modelBuilder);
         }
 
-        protected virtual void SaveAudit(IEnumerable<DbEntityEntry> dbEntityEntries, IEnumerable<EntityState> originalEntityStates)
+        protected virtual void SaveAudit(IEnumerable<EntityEntry> dbEntityEntries, IEnumerable<EntityState> originalEntityStates)
         {
             var entitiesWithOriginalStates = dbEntityEntries.Zip(originalEntityStates, (x, y) => new {x.Entity, State = y});
 

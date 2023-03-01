@@ -7,9 +7,10 @@
 // // -----------------------------------------------------------------------
 
 using System.Data.Common;
-using System.Data.Entity;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace EfYou.DatabaseContext
 {
@@ -18,14 +19,14 @@ namespace EfYou.DatabaseContext
     /// </summary>
     public class DatabaseAccessor : IDatabaseAccessor
     {
-        private readonly Database _database;
+        private readonly DatabaseFacade _database;
 
-        public DatabaseAccessor(Database database)
+        public DatabaseAccessor(DatabaseFacade database)
         {
             _database = database;
         }
 
-        public string DatabaseName => _database.Connection.Database;
+        public string DatabaseName => _database.GetDbConnection().Database;
 
         /// <summary>
         ///     Executes the given DDL/DML command against the database.
@@ -47,7 +48,7 @@ namespace EfYou.DatabaseContext
         /// <returns> The result returned by the database after executing the command. </returns>
         public virtual int ExecuteSqlCommand(string sql, params object[] parameters)
         {
-            return _database.ExecuteSqlCommand(sql, parameters);
+            return _database.ExecuteSqlRaw(sql, parameters);
         }
 
         /// <summary>
@@ -61,16 +62,27 @@ namespace EfYou.DatabaseContext
         ///     context.Database.ExecuteSqlCommand("UPDATE dbo.Posts SET Rating = 5 WHERE Author = @author", new
         ///     SqlParameter("@author", userSuppliedAuthor));
         /// </summary>
-        /// <param name="transactionalBehavior"> Controls the creation of a transaction for this command. </param>
+        /// <param name="transaction"> Controls if a transaction will wrap the command. </param>
         /// <param name="sql"> The command string. </param>
         /// <param name="parameters"> The parameters to apply to the command string. </param>
         /// <returns> The result returned by the database after executing the command. </returns>
         public virtual int ExecuteSqlCommand(
-            TransactionalBehavior transactionalBehavior,
+            bool transaction,
             string sql,
             params object[] parameters)
         {
-            return _database.ExecuteSqlCommand(transactionalBehavior, sql, parameters);
+            if(transaction)
+            {
+                _database.BeginTransaction();
+
+                var result = _database.ExecuteSqlRaw(sql, parameters);
+
+                _database.CommitTransaction();
+
+                return result;
+            }
+
+            return ExecuteSqlCommand(sql, parameters);
         }
 
         /// <summary>
@@ -98,7 +110,7 @@ namespace EfYou.DatabaseContext
         /// </returns>
         public virtual Task<int> ExecuteSqlCommandAsync(string sql, params object[] parameters)
         {
-            return _database.ExecuteSqlCommandAsync(sql, parameters);
+            return _database.ExecuteSqlRawAsync(sql, parameters);
         }
 
         /// <summary>
@@ -116,7 +128,7 @@ namespace EfYou.DatabaseContext
         ///     Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
         ///     that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
-        /// <param name="transactionalBehavior"> Controls the creation of a transaction for this command. </param>
+        /// <param name="transaction"> Controls if a transaction will wrap the command. </param>
         /// <param name="sql"> The command string. </param>
         /// <param name="parameters"> The parameters to apply to the command string. </param>
         /// <returns>
@@ -124,11 +136,22 @@ namespace EfYou.DatabaseContext
         ///     The task result contains the result returned by the database after executing the command.
         /// </returns>
         public virtual Task<int> ExecuteSqlCommandAsync(
-            TransactionalBehavior transactionalBehavior,
+            bool transaction,
             string sql,
             params object[] parameters)
         {
-            return _database.ExecuteSqlCommandAsync(transactionalBehavior, sql, parameters);
+            if (transaction)
+            {
+                _database.BeginTransaction();
+
+                var result = _database.ExecuteSqlRawAsync(sql, parameters);
+
+                _database.CommitTransaction();
+
+                return result;
+            }
+
+            return ExecuteSqlCommandAsync(sql, parameters);
         }
 
         /// <summary>
@@ -162,7 +185,7 @@ namespace EfYou.DatabaseContext
             CancellationToken cancellationToken,
             params object[] parameters)
         {
-            return _database.ExecuteSqlCommandAsync(sql, cancellationToken, parameters);
+            return _database.ExecuteSqlRawAsync(sql, cancellationToken, parameters);
         }
 
         /// <summary>
@@ -180,7 +203,7 @@ namespace EfYou.DatabaseContext
         ///     Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
         ///     that any asynchronous operations have completed before calling another method on this context.
         /// </remarks>
-        /// <param name="transactionalBehavior"> Controls the creation of a transaction for this command. </param>
+        /// <param name="transaction"> Controls if a transaction will wrap the command. </param>
         /// <param name="sql"> The command string. </param>
         /// <param name="cancellationToken">
         ///     A <see cref="T:System.Threading.CancellationToken" /> to observe while waiting for the task to complete.
@@ -191,14 +214,25 @@ namespace EfYou.DatabaseContext
         ///     The task result contains the result returned by the database after executing the command.
         /// </returns>
         public virtual Task<int> ExecuteSqlCommandAsync(
-            TransactionalBehavior transactionalBehavior,
+            bool transaction,
             string sql,
             CancellationToken cancellationToken,
             params object[] parameters)
         {
-            return _database.ExecuteSqlCommandAsync(transactionalBehavior, sql, cancellationToken, parameters);
+            if (transaction)
+            {
+                _database.BeginTransaction();
+
+                var result = _database.ExecuteSqlRawAsync(sql, cancellationToken, parameters);
+
+                _database.CommitTransaction();
+
+                return result;
+            }
+
+            return ExecuteSqlCommandAsync(sql, cancellationToken, parameters);
         }
 
-        public DbConnection Connection => _database.Connection;
+        public DbConnection Connection => _database.GetDbConnection();
     }
 }

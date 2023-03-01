@@ -8,12 +8,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 using EfYou.Filters;
 using EfYou.Model.FilterExtensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace EfYouTests.Filters
 {
@@ -151,16 +154,18 @@ namespace EfYouTests.Filters
             var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
 
             var mockDbSet = new Mock<DbSet<DummyParent>>();
-
-            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
-                .Returns<string>(x => mockDbSet.Object);
+            var mockQueryProvider = new Mock<EntityQueryProvider>(new Mock<IQueryCompiler>().Object);
+            var queryableMockDbSet = mockDbSet.As<IQueryable<DummyParent>>();
+            queryableMockDbSet.Setup(x => x.Provider).Returns(mockQueryProvider.Object);
+            queryableMockDbSet.Setup(x => x.Expression).Returns(mockDbSet.Object.AsQueryable().Expression);
+//            mockQueryProvider.Setup(x => x.CreateQuery(It.IsAny<MethodCallExpression>())).Returns(queryableMockDbSet.Object);
 
             // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
+            filterService.Object.AddIncludes(queryableMockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
 
             // Assert
-            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
-            mockDbSet.Verify(mock => mock.Include("DummyEntity.DummyChild"), Times.Once);
+            mockQueryProvider.Verify(mock => mock.CreateQuery<DummyParent>(It.IsAny<MethodCallExpression>()), Times.Once);
+            mockQueryProvider.Verify(mock => mock.CreateQuery<DummyParent>(It.Is<MethodCallExpression>(y => y.Arguments[1] == Expression.Constant("DummyEntity"))), Times.Once);
         }
 
         [TestMethod]
@@ -170,15 +175,15 @@ namespace EfYouTests.Filters
             var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
 
             var mockDbSet = new Mock<DbSet<DummyParent>>();
-
-            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
-                .Returns<string>(x => mockDbSet.Object);
+            var mockQueryProvider = new Mock<EntityQueryProvider>(new Mock<IQueryCompiler>().Object);
+            var queryableMockDbSet = mockDbSet.As<IQueryable<DummyParent>>();
+            queryableMockDbSet.Setup(x => x.Provider).Returns(mockQueryProvider.Object);
 
             // Act
             filterService.Object.AddIncludes(mockDbSet.Object, null);
 
             // Assert
-            mockDbSet.Verify(mock => mock.Include(It.IsAny<string>()), Times.Never);
+            mockQueryProvider.Verify(mock => mock.CreateQuery<DummyParent>(It.IsAny<Expression>()), Times.Never);
         }
 
         [TestMethod]

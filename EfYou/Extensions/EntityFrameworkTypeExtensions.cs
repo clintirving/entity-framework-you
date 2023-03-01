@@ -10,12 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Core.Mapping;
-using System.Data.Entity.Core.Metadata.Edm;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Reflection;
 using EfYou.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace EfYou.Extensions
 {
@@ -40,24 +38,16 @@ namespace EfYou.Extensions
 
         public static string GetTableName(this Type type, IContext context)
         {
-            var entityName = type.Name;
+            var entityType = context.Model.FindEntityType(type);
 
-            var objectContext = ((IObjectContextAdapter) context).ObjectContext;
-
-            var storageMetadata = objectContext.MetadataWorkspace.GetItems<EntityContainerMapping>(DataSpace.CSSpace);
-
-            var databaseName = context.DatabaseAccessor.DatabaseName;
-
-            foreach (var ecm in storageMetadata)
+            if (entityType == null)
             {
-                EntitySet entitySet;
-                if (ecm.StoreEntityContainer.TryGetEntitySetByName(entityName, true, out entitySet))
-                {
-                    return string.Format("[{0}].[{1}].[{2}]", databaseName, entitySet.Schema, entitySet.Table);
-                }
+                throw new ApplicationException("Could not find Entity Type in EF Model: " + type.Name);
             }
 
-            throw new ApplicationException("Could not find tablename for type: " + entityName + " in database " + databaseName);
+            var tableName = entityType.GetTableName();
+
+            return tableName;
         }
 
         public static List<PropertyInfo> GetPrimaryKeyProperties(this Type entityType)

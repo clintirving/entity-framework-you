@@ -7,8 +7,7 @@
 // // -----------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Security;
 using EfYou.DatabaseContext;
@@ -43,7 +42,7 @@ namespace EfYouTests.ScopeOfResponsibility
             _context = new Mock<IContext>();
             _context.Setup(x => x.Set<DummyEntity>()).Returns(_mockDbSet.Object);
             _context.Setup(x => x.Set<Login>()).Returns(_mockDbSetLogins.Object);
-            _context.As<IObjectContextAdapter>();
+            //_context.As<IObjectContextAdapter>();
 
             _contextFactory = new Mock<ISecurityContextFactory>();
             _contextFactory.Setup(x => x.Create()).Returns(_context.Object);
