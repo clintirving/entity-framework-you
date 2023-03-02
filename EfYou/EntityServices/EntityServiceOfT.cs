@@ -85,6 +85,8 @@ namespace EfYou.EntityServices
             {
                 IQueryable<T> query = context.Set<T>();
 
+                query = query.AsNoTracking();
+
                 query = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(query);
 
                 query = _filterService.FilterResultsOnGet(query, ids);
@@ -325,6 +327,8 @@ namespace EfYou.EntityServices
             foreach (var filter in filters)
             {
                 IQueryable<T> queryForFilter = context.Set<T>();
+
+                queryForFilter = queryForFilter.AsNoTracking();
 
                 queryForFilter = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(queryForFilter);
 
