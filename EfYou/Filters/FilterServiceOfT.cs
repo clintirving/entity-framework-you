@@ -14,6 +14,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using EfYou.DatabaseContext;
 using EfYou.Extensions;
 using EfYou.Model.Attributes;
 using EfYou.Model.FilterExtensions;
@@ -26,17 +27,17 @@ namespace EfYou.Filters
         private const string OrderByDescending = " DESCENDING";
         private const string OrderBySeparator = ", ";
 
-        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids)
+        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids, IContext context)
         {
-            return FilterResultsOnIdsFilter(query, ids);
+            return FilterResultsOnIdsFilter(query, ids, context);
         }
         
-        public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter)
+        public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter, IContext context)
         {
             return AutoFilter(query, filter);
         }
 
-        public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes)
+        public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes, IContext context)
         {
             if (includes != null)
             {
@@ -52,7 +53,7 @@ namespace EfYou.Filters
             return query;
         }
 
-        public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys)
+        public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context)
         {
             if (orderBys != null && orderBys.Count != 0)
             {
@@ -64,7 +65,7 @@ namespace EfYou.Filters
             return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
         }
 
-        public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging)
+        public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context)
         {
             if (paging != null)
             {
@@ -100,7 +101,7 @@ namespace EfYou.Filters
             return pagedQuery;
         }
 
-        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids)
+        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids, IContext context)
         {
             var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
 

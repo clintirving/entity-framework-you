@@ -89,13 +89,13 @@ namespace EfYou.EntityServices
 
                 query = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(query);
 
-                query = _filterService.FilterResultsOnGet(query, ids);
+                query = _filterService.FilterResultsOnGet(query, ids, context);
 
-                query = _filterService.AddIncludes(query, includes);
+                query = _filterService.AddIncludes(query, includes, context);
 
-                query = _filterService.AddOrderBys(query, orderBys);
+                query = _filterService.AddOrderBys(query, orderBys, context);
 
-                query = _filterService.AddPaging(query, paging);
+                query = _filterService.AddPaging(query, paging, context);
 
                 var results = query.ToList();
 
@@ -332,9 +332,9 @@ namespace EfYou.EntityServices
 
                 queryForFilter = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(queryForFilter);
 
-                queryForFilter = _filterService.FilterResultsOnSearch(queryForFilter, filter);
+                queryForFilter = _filterService.FilterResultsOnSearch(queryForFilter, filter, context);
 
-                queryForFilter = _filterService.AddIncludes(queryForFilter, includes);
+                queryForFilter = _filterService.AddIncludes(queryForFilter, includes, context);
 
                 completeQuery = completeQuery == null ? queryForFilter : completeQuery.Concat(queryForFilter);
             }
@@ -343,9 +343,9 @@ namespace EfYou.EntityServices
             {
                 completeQuery = completeQuery.Distinct();
 
-                completeQuery = _filterService.AddOrderBys(completeQuery, orderBys);
+                completeQuery = _filterService.AddOrderBys(completeQuery, orderBys, context);
 
-                completeQuery = _filterService.AddPaging(completeQuery, paging);
+                completeQuery = _filterService.AddPaging(completeQuery, paging, context);
             }
 
             return completeQuery;
