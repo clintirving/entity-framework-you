@@ -34,7 +34,7 @@ namespace EfYou.Filters
         
         public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter, IContext context)
         {
-            return AutoFilter(query, filter);
+            return AutoFilter(query, filter, context);
         }
 
         public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes, IContext context)
@@ -183,7 +183,7 @@ namespace EfYou.Filters
             return query.OrderBy(x => x.Key);
         }
 
-        public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter)
+        public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter, IContext context)
         {
             var filterType = filter.GetType();
 
