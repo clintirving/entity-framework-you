@@ -35,7 +35,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyChild> { new DummyChild { Id = 1 }, new DummyChild { Id = 2 }, new DummyChild { Id = 3 } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 }, null);
 
             // Assert
             Assert.AreEqual(1, results.Count());
@@ -51,7 +51,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> {new DummyEntity {Id = 1}, new DummyEntity {Id = 2}, new DummyEntity {Id = 3}}.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> {2});
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> {2}, null);
 
             // Assert
             Assert.AreEqual(1, results.Count());
@@ -67,7 +67,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyParent> { new DummyParent { Id = 1 }, new DummyParent { Id = 2 }, new DummyParent { Id = 3 } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 }, null);
 
             // Assert
             Assert.AreEqual(1, results.Count());
@@ -86,7 +86,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntityWithGuidId> { new DummyEntityWithGuidId { Id = first }, new DummyEntityWithGuidId { Id = second }, new DummyEntityWithGuidId { Id = third } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { second });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { second }, null);
 
             // Assert
             Assert.AreEqual(1, results.Count());
@@ -103,7 +103,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntityWithInvalidIdType> { new DummyEntityWithInvalidIdType { Id = true }, new DummyEntityWithInvalidIdType { Id = false }, new DummyEntityWithInvalidIdType { Id = false } }.AsQueryable();
 
             // Act
-            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 });
+            var results = filterService.Object.FilterResultsOnGet(queryable, new List<dynamic> { 2 }, null);
 
             // Assert
             // By Exception
@@ -120,7 +120,7 @@ namespace EfYouTests.Filters
             var filter = new DummyEntity();
 
             // Act
-            filterService.Object.FilterResultsOnSearch(queryable, filter);
+            filterService.Object.FilterResultsOnSearch(queryable, filter, null);
 
             // Assert
             filterService.Verify(x => x.AutoFilter(queryable, filter), Times.Once);
@@ -138,7 +138,7 @@ namespace EfYouTests.Filters
                 .Returns<string>(x => mockDbSet.Object);
 
             // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity" });
+            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity" }, null);
 
             // Assert
             mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
@@ -156,7 +156,7 @@ namespace EfYouTests.Filters
                 .Returns<string>(x => mockDbSet.Object);
 
             // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
+            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" }, null);
 
             // Assert
             mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
@@ -175,7 +175,7 @@ namespace EfYouTests.Filters
                 .Returns<string>(x => mockDbSet.Object);
 
             // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, null);
+            filterService.Object.AddIncludes(mockDbSet.Object, null, null);
 
             // Assert
             mockDbSet.Verify(mock => mock.Include(It.IsAny<string>()), Times.Never);
@@ -189,7 +189,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 });
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 }, null);
 
             // Assert
             Assert.AreEqual(5, result.Single().Id);
@@ -203,7 +203,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 });
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 }, null);
 
             // Assert
             Assert.AreEqual(4, result.Single().Id);
@@ -217,7 +217,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 });
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 }, null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
@@ -232,7 +232,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, null);
+            var result = filterService.Object.AddPaging(queryable, null, null);
 
             // Assert
             Assert.AreEqual(queryable.Count(), result.Count());
@@ -246,7 +246,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> {new DummyEntity {Id = 5}, new DummyEntity {Id = 3}}.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>());
+            var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null);
 
             // Assert
             Assert.AreEqual(3, result.First().Id);
@@ -262,7 +262,7 @@ namespace EfYouTests.Filters
 
             // Act
             var result = filterService.Object.AddOrderBys(queryable,
-                new List<OrderBy> {new OrderBy {ColumnName = "Id"}});
+                new List<OrderBy> {new OrderBy {ColumnName = "Id"}}, null);
 
             // Assert
             Assert.AreEqual(3, result.First().Id);
@@ -278,7 +278,7 @@ namespace EfYouTests.Filters
 
             // Act
             var result = filterService.Object.AddOrderBys(queryable,
-                new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}});
+                new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}}, null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
@@ -299,7 +299,7 @@ namespace EfYouTests.Filters
                 {
                     new OrderBy {ColumnName = "Name", Descending = true},
                     new OrderBy {ColumnName = "Id"}
-                });
+                }, null);
 
             // Assert
             Assert.AreEqual("XYZ", result.First().Name);
