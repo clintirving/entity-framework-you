@@ -234,15 +234,15 @@ namespace EfYou.Filters
 
                     if (filterExtensionAttribute?.AppliedToProperty != null)
                     {
-                        if (filterExtensionProperty.PropertyType == typeof(DateTimeRange))
+                        if (typeof(DateTimeRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddDateTimeRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
-                        else if (filterExtensionProperty.PropertyType == typeof(NumberRange))
+                        else if (typeof(NumberRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddNumberRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
-                        else if (filterExtensionProperty.PropertyType == typeof(TimeSpanRange))
+                        else if (typeof(TimeSpanRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddTimeSpanRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
@@ -250,6 +250,11 @@ namespace EfYou.Filters
                                  filterExtensionProperty.PropertyType.GetGenericTypeDefinition() == typeof(CollectionContains<>))
                         {
                             query = AddCollectionContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
+                        }
+                        else if (filterExtensionProperty.PropertyType.IsGenericType &&
+                                 filterExtensionProperty.PropertyType.GetGenericTypeDefinition() == typeof(ListContains<>))
+                        {
+                            query = AddListContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
                     }
 
@@ -266,6 +271,16 @@ namespace EfYou.Filters
             var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
 
             query = ApplyCollectionContains(query, property, currentFilterProperty);
+
+            return query;
+        }
+
+        private IQueryable<T> AddListContainsToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
+            FilterExtensionsAttribute filterExtensionAttribute)
+        {
+            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+
+            query = ApplyListContains(query, property, currentFilterProperty);
 
             return query;
         }
@@ -521,6 +536,18 @@ namespace EfYou.Filters
             var e = Expression.Parameter(typeof(T), "e");
             var m = Expression.MakeMemberAccess(e, filterProperty);
             var genericCollectionOfPropertyType = typeof(Collection<>).MakeGenericType(filterProperty.PropertyType);
+            var c = Expression.Constant(propertyValue, genericCollectionOfPropertyType);
+            var condition = Expression.Call(c, genericCollectionOfPropertyType.GetMethod("Contains"), m);
+            var lambda = Expression.Lambda<Func<T, bool>>(condition, e);
+            query = query.Where(lambda);
+            return query;
+        }
+
+        private IQueryable<T> ApplyListContains(IQueryable<T> query, PropertyInfo filterProperty, object propertyValue)
+        {
+            var e = Expression.Parameter(typeof(T), "e");
+            var m = Expression.MakeMemberAccess(e, filterProperty);
+            var genericCollectionOfPropertyType = typeof(List<>).MakeGenericType(filterProperty.PropertyType);
             var c = Expression.Constant(propertyValue, genericCollectionOfPropertyType);
             var condition = Expression.Call(c, genericCollectionOfPropertyType.GetMethod("Contains"), m);
             var lambda = Expression.Lambda<Func<T, bool>>(condition, e);

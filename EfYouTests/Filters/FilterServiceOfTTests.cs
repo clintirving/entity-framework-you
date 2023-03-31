@@ -784,6 +784,27 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsClassInheritingDateTimeRangeWithValue_DateTimeRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Start = DateTime.UtcNow }, new DummyEntity { Start = DateTime.UtcNow.AddDays(5) } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                        { InheritingStartRange = new InheritingDateTimeRange { After = DateTime.UtcNow.AddDays(3), Before = DateTime.UtcNow.AddDays(6) } }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+
+        [TestMethod]
         public void AutoFilter_FilterExtensionsContainsDateTimeRangeWithValue_DateTimeRangeFilterIncludesBoundaries()
         {
             // Arrange
@@ -1040,7 +1061,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions { FilterableInts = new CollectionContains<int> { 9 } }
+                    DummyFilterExtensions = new DummyFilterExtensions { CollectionInts = new CollectionContains<int> { 9 } }
                 }, It.IsAny<IContext>());
 
             // Assert
@@ -1059,7 +1080,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {FilterableLongs = new CollectionContains<long> {9}}
+                    DummyFilterExtensions = new DummyFilterExtensions {CollectionLongs = new CollectionContains<long> {9}}
                 }, It.IsAny<IContext>());
 
             // Assert
@@ -1078,7 +1099,7 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {FilterableStrings = new CollectionContains<string> {"Something"}}
+                    DummyFilterExtensions = new DummyFilterExtensions {CollectionStrings = new CollectionContains<string> {"Something"}}
                 }, It.IsAny<IContext>());
 
             // Assert
@@ -1097,7 +1118,83 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {FilterableNullableInts = new CollectionContains<int?> {9}}
+                    DummyFilterExtensions = new DummyFilterExtensions {CollectionNullableInts = new CollectionContains<int?> {9}}
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(9, results.Single().FilterableNullableInt);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsListContainsForIntProperty_ListContainsFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5, FilterableInt = 7 }, new DummyEntity { Id = 6, FilterableInt = 9 } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { ListInts = new ListContains<int> { 9 } }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(9, results.Single().FilterableInt);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsListContainsForLongProperty_ListContainsFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5, FilterableLong = 7 }, new DummyEntity { Id = 6, FilterableLong = 9 } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { ListLongs = new ListContains<long> { 9 } }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(9, results.Single().FilterableLong);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsListContainsForStringProperty_ListContainsFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, FilterableString = "Something"}, new DummyEntity {Id = 6, FilterableString = "Else"}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { ListStrings = new ListContains<string> { "Something" } }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual("Something", results.Single().FilterableString);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsListContainsForNullableIntProperty_ListContainsFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, FilterableNullableInt = 7}, new DummyEntity {Id = 6, FilterableNullableInt = 9}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { ListNullableInts = new ListContains<int?> { 9 } }
                 }, It.IsAny<IContext>());
 
             // Assert
