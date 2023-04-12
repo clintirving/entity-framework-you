@@ -1088,7 +1088,7 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AutoFilter_FilterExtensionsContainsCollectionContainsForStringProperty_CollectionContainsFilterApplied()
+        public void AutoFilter_FilterExtensionsContainsEmptyCollectionContainsForStringProperty_CollectionContainsFilterIgnored()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -1099,11 +1099,12 @@ namespace EfYouTests.Filters
             var results = filterService.Object.AutoFilter(queryable,
                 new DummyEntity
                 {
-                    DummyFilterExtensions = new DummyFilterExtensions {CollectionStrings = new CollectionContains<string> {"Something"}}
+                    DummyFilterExtensions = new DummyFilterExtensions {CollectionStrings = new CollectionContains<string>()}
                 }, It.IsAny<IContext>());
 
             // Assert
-            Assert.AreEqual("Something", results.Single().FilterableString);
+            Assert.IsTrue(results.FirstOrDefault(x => x.FilterableString == "Something") != null);
+            Assert.IsTrue(results.FirstOrDefault(x => x.FilterableString == "Else") != null);
         }
 
         [TestMethod]
@@ -1180,6 +1181,26 @@ namespace EfYouTests.Filters
 
             // Assert
             Assert.AreEqual("Something", results.Single().FilterableString);
+        }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsEmptyListContainsForStringProperty_ListContainsFilterIgnored()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+                {new DummyEntity {Id = 5, FilterableString = "Something"}, new DummyEntity {Id = 6, FilterableString = "Else"}}.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions { ListStrings = new ListContains<string>() }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.IsTrue(results.FirstOrDefault(x => x.FilterableString == "Something") != null);
+            Assert.IsTrue(results.FirstOrDefault(x => x.FilterableString == "Else") != null);
         }
 
         [TestMethod]

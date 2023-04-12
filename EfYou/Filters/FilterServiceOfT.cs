@@ -7,6 +7,7 @@
 // // -----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
@@ -249,7 +250,7 @@ namespace EfYou.Filters
                         else if (filterExtensionProperty.PropertyType.IsGenericType &&
                                  filterExtensionProperty.PropertyType.GetGenericTypeDefinition() == typeof(CollectionContains<>))
                         {
-                            query = AddCollectionContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
+                                query = AddCollectionContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
                         else if (filterExtensionProperty.PropertyType.IsGenericType &&
                                  filterExtensionProperty.PropertyType.GetGenericTypeDefinition() == typeof(ListContains<>))
@@ -268,9 +269,12 @@ namespace EfYou.Filters
         private IQueryable<T> AddCollectionContainsToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
             FilterExtensionsAttribute filterExtensionAttribute)
         {
-            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
-
-            query = ApplyCollectionContains(query, property, currentFilterProperty);
+            var collection = (ICollection)currentFilterProperty;
+            if (collection != null && collection.Count > 0)
+            {
+                var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+                query = ApplyCollectionContains(query, property, currentFilterProperty);
+            }
 
             return query;
         }
@@ -278,9 +282,12 @@ namespace EfYou.Filters
         private IQueryable<T> AddListContainsToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
             FilterExtensionsAttribute filterExtensionAttribute)
         {
-            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
-
-            query = ApplyListContains(query, property, currentFilterProperty);
+            var list = (IList)currentFilterProperty;
+            if (list != null && list.Count > 0)
+            {
+                var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+                query = ApplyListContains(query, property, currentFilterProperty);
+            }
 
             return query;
         }
