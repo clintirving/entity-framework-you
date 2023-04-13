@@ -12,5 +12,13 @@ namespace EfYou.Model.FilterExtensions
 {
     public class ListContains<T> : List<T>
     {
+        public ListContains()
+            : base() { }
+
+        public ListContains(int capacity)
+            : base(capacity) { }
+
+        public ListContains(IEnumerable<T> collection)
+            : base(collection) { }
     }
 }
