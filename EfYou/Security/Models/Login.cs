@@ -32,7 +32,7 @@ namespace EfYou.Security.Models
         [DbRequired(AllowEmptyStrings = true)]
         public string MobileNumber { get; set; }
 
-        [XmlIgnore] public virtual List<LoginAttempt> LoginAttempts { get; set; }
+        [XmlIgnore] public virtual List<LoginSuccess> LoginSuccesses { get; set; }
 
         [XmlIgnore] public virtual LoginReset LoginReset { get; set; }
 
