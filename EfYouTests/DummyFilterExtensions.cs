@@ -6,6 +6,7 @@
 // // <author>Clint Irving</author>
 // // -----------------------------------------------------------------------
 
+using System;
 using EfYou.Model.Attributes;
 using EfYou.Model.FilterExtensions;
 
@@ -16,11 +17,17 @@ namespace EfYouTests
         [FilterExtensions(AppliedToProperty = "Start")]
         public DateTimeRange StartRange { get; set; }
 
+        [FilterExtensions(AppliedToProperty = "StartOffset")]
+        public DateTimeOffsetRange StartOffsetRange { get; set; }
+
         [FilterExtensions(AppliedToProperty = "Start")]
         public InheritingDateTimeRange InheritingStartRange { get; set; }
 
         [FilterExtensions(AppliedToProperty = "Finish")]
         public DateTimeRange FinishRange { get; set; }
+
+        [FilterExtensions(AppliedToProperty = "FinishOffset")]
+        public DateTimeOffsetRange FinishOffsetRange { get; set; }
 
         [FilterExtensions(AppliedToProperty = "Number")]
         public NumberRange NumberRange { get; set; }

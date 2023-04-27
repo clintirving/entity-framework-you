@@ -509,6 +509,25 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
+        public void AutoFilter_DateTimeOffsetPropertySetToDateTimeOffsetMin_NoFilterAppliedForProperty()
+        {
+            var now = DateTimeOffset.UtcNow;
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, StartOffset = now}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { StartOffset = DateTimeOffset.MinValue }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(3, results.Count());
+        }
+
+        [TestMethod]
         public void AutoFilter_DateTimePropertySetToNonDateTimeMinValue_FilterOnPropertyEqualsValue()
         {
             var now = DateTime.UtcNow;
@@ -522,6 +541,25 @@ namespace EfYouTests.Filters
 
             // Act
             var results = filterService.Object.AutoFilter(queryable, new DummyEntity {Start = now}, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
+        [TestMethod]
+        public void AutoFilter_DateTimeOffsetPropertySetToNonDateTimeOffsetMinValue_FilterOnPropertyEqualsValue()
+        {
+            var now = DateTimeOffset.UtcNow;
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, StartOffset = now}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { StartOffset = now }, It.IsAny<IContext>());
 
             // Assert
             Assert.AreEqual(1, results.Count());
@@ -546,6 +584,26 @@ namespace EfYouTests.Filters
             Assert.AreEqual(1, results.Count());
         }
 
+
+        [TestMethod]
+        public void AutoFilter_NullableDateTimeOffsetPropertySetToValue_FilterOnPropertyEqualsValue()
+        {
+            var now = DateTimeOffset.UtcNow;
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, FinishOffset = now}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { FinishOffset = now }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
         [TestMethod]
         public void AutoFilter_NullableDateTimePropertySetToNull_NoFilterAppliedForProperty()
         {
@@ -560,6 +618,25 @@ namespace EfYouTests.Filters
 
             // Act
             var results = filterService.Object.AutoFilter(queryable, new DummyEntity {Finish = null}, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(3, results.Count());
+        }
+
+        [TestMethod]
+        public void AutoFilter_NullableDateTimeOffsetPropertySetToNull_NoFilterAppliedForProperty()
+        {
+            var now = DateTimeOffset.UtcNow;
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Name = "DEF", Id = 5, FinishOffset = now}, new DummyEntity {Name = "DEFG", Id = 9, Enabled = false},
+                new DummyEntity {Name = "XYZ"}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable, new DummyEntity { FinishOffset = null }, It.IsAny<IContext>());
 
             // Assert
             Assert.AreEqual(3, results.Count());
@@ -762,6 +839,25 @@ namespace EfYouTests.Filters
             Assert.AreEqual(1, results.Count());
         }
 
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsNullableDateTimeOffsetRangeWithValue_DateTimeOffsetRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { FinishOffset = DateTimeOffset.UtcNow }, new DummyEntity { FinishOffset = DateTimeOffset.UtcNow.AddDays(5) } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                        { FinishOffsetRange = new DateTimeOffsetRange { After = DateTimeOffset.UtcNow.AddDays(3), Before = DateTimeOffset.UtcNow.AddDays(6) } }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
 
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsDateTimeRangeWithValue_DateTimeRangeFilterApplied()
@@ -782,6 +878,27 @@ namespace EfYouTests.Filters
             // Assert
             Assert.AreEqual(1, results.Count());
         }
+
+        [TestMethod]
+        public void AutoFilter_FilterExtensionsContainsDateTimeOffsetRangeWithValue_DateTimeOffsetRangeFilterApplied()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { StartOffset = DateTimeOffset.UtcNow }, new DummyEntity { StartOffset = DateTimeOffset.UtcNow.AddDays(5) } }
+                .AsQueryable();
+
+            // Act
+            var results = filterService.Object.AutoFilter(queryable,
+                new DummyEntity
+                {
+                    DummyFilterExtensions = new DummyFilterExtensions
+                        { StartOffsetRange = new DateTimeOffsetRange { After = DateTimeOffset.UtcNow.AddDays(3), Before = DateTimeOffset.UtcNow.AddDays(6) } }
+                }, It.IsAny<IContext>());
+
+            // Assert
+            Assert.AreEqual(1, results.Count());
+        }
+
 
         [TestMethod]
         public void AutoFilter_FilterExtensionsContainsClassInheritingDateTimeRangeWithValue_DateTimeRangeFilterApplied()

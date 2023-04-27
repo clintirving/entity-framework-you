@@ -37,7 +37,11 @@ namespace EfYouTests
 
         public DateTime Start { get; set; }
 
+        public DateTimeOffset StartOffset { get; set; }
+
         public DateTime? Finish { get; set; }
+
+        public DateTimeOffset? FinishOffset { get; set; }
 
         [DefaultValue(UtcNow = true)] public DateTime? DefaultingDate { get; set; }
 
