@@ -198,9 +198,13 @@ namespace EfYou.Filters
                 {
                     query = AddNumericFilterToQuery(query, filter, filterProperty);
                 }
-                else if (propertyType.IsDateType())
+                else if (propertyType.IsDateTimeType())
                 {
-                    query = AddDateFilterToQuery(query, filter, filterProperty);
+                    query = AddDateTimeFilterToQuery(query, filter, filterProperty);
+                }
+                else if (propertyType.IsDateTimeOffsetType())
+                {
+                    query = AddDateTimeOffsetFilterToQuery(query, filter, filterProperty);
                 }
                 else if (propertyType.IsStringType())
                 {
@@ -238,6 +242,10 @@ namespace EfYou.Filters
                         if (typeof(DateTimeRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddDateTimeRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
+                        }
+                        if (typeof(DateTimeOffsetRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
+                        {
+                            query = AddDateTimeOffsetRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
                         else if (typeof(NumberRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
@@ -384,6 +392,29 @@ namespace EfYou.Filters
             return query;
         }
 
+        private IQueryable<T> AddDateTimeOffsetRangeToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
+            FilterExtensionsAttribute filterExtensionAttribute)
+        {
+            var dateTimeOffsetRange = (DateTimeOffsetRange)currentFilterProperty;
+
+            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+
+            if (property.PropertyType.IsNullableType())
+            {
+                query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
+                    Convert.ChangeType(dateTimeOffsetRange.After, Nullable.GetUnderlyingType(property.PropertyType)));
+                query = ApplyLessThanOrEqualFilterToQuery(query, property,
+                    Convert.ChangeType(dateTimeOffsetRange.Before, Nullable.GetUnderlyingType(property.PropertyType)));
+            }
+            else
+            {
+                query = ApplyGreaterThanOrEqualFilterToQuery(query, property, dateTimeOffsetRange.After);
+                query = ApplyLessThanOrEqualFilterToQuery(query, property, dateTimeOffsetRange.Before);
+            }
+
+            return query;
+        }
+
         private IQueryable<T> AddFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
         {
             var propertyValue = filterProperty.GetValue(filter);
@@ -435,10 +466,21 @@ namespace EfYou.Filters
             return query;
         }
 
-        private IQueryable<T> AddDateFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
+        private IQueryable<T> AddDateTimeFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
         {
             var propertyValue = filterProperty.GetValue(filter);
             if (Convert.ToDateTime(propertyValue) != DateTime.MinValue)
+            {
+                query = ApplyEqualityFilterToQuery(query, filterProperty, propertyValue);
+            }
+
+            return query;
+        }
+
+        private IQueryable<T> AddDateTimeOffsetFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
+        {
+            var propertyValue = filterProperty.GetValue(filter);
+            if ((DateTimeOffset)propertyValue != DateTimeOffset.MinValue)
             {
                 query = ApplyEqualityFilterToQuery(query, filterProperty, propertyValue);
             }
@@ -611,9 +653,14 @@ namespace EfYou.Filters
             return Type.GetTypeCode(type) == TypeCode.String;
         }
 
-        public static bool IsDateType(this Type type)
+        public static bool IsDateTimeType(this Type type)
         {
             return Type.GetTypeCode(type) == TypeCode.DateTime;
+        }
+
+        public static bool IsDateTimeOffsetType(this Type type)
+        {
+            return type == typeof(DateTimeOffset);
         }
     }
 }
