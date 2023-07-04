@@ -1435,5 +1435,27 @@ namespace EfYouTests.Filters
             Assert.AreEqual(3, results.ToList()[1].Key);
             Assert.AreEqual(2, results.ToList()[2].Key);
         }
+
+        [ExpectedException(typeof(ArgumentException))]
+        [TestMethod]
+        public void AddAggregationFilter_GroupBysIsNull_ThrowsArgumentException()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity {Id = 1, Choices = Choices.Poorly, Enabled = true, FilterableInt = 5},
+                new DummyEntity {Id = 2, Choices = Choices.Wisely, Enabled = true, FilterableInt = 4},
+                new DummyEntity {Id = 3, Choices = Choices.Undefined, Enabled = false, FilterableInt = 4},
+                new DummyEntity {Id = 4, Choices = Choices.Poorly, Enabled = true, FilterableInt = 5}
+            }.AsQueryable();
+
+            // Act
+            var results = filterService.Object.AddAggregationFilter(queryable, null, null, new List<OrderBy> { new OrderBy { ColumnName = "Id", Descending = true } });
+
+            // Assert
+            // By Expected Exception
+        }
     }
 }

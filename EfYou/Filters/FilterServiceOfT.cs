@@ -28,6 +28,8 @@ namespace EfYou.Filters
         private const string OrderByDescending = " DESCENDING";
         private const string OrderBySeparator = ", ";
 
+        public virtual string IdColumnName => "Id";
+
         public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids, IContext context)
         {
             return FilterResultsOnIdsFilter(query, ids, context);
@@ -89,6 +91,11 @@ namespace EfYou.Filters
         public virtual IQueryable<IGrouping<long, List<long>>> AddAggregationFilter(IQueryable<T> query, List<string> groupBys, Paging paging,
             List<OrderBy> orderBys)
         {
+            if (groupBys == null || groupBys.Count == 0)
+            {
+                throw new ArgumentException("Argument groupBys cannot be null or Empty when attempting an aggregation operation");
+            }
+
             var groupByType = CreateAnonymousType(groupBys);
             var groupByTypeConstructor = groupByType.GetConstructors().First();
             var groupByTypeProperties = groupByType.GetProperties();
@@ -158,7 +165,7 @@ namespace EfYou.Filters
         private Expression<Func<T, long>> CreateResultSelectorFunctionForGroupBy()
         {
             var parameter = Expression.Parameter(typeof(T), "x");
-            var argument = Expression.PropertyOrField(parameter, "Id");
+            var argument = Expression.PropertyOrField(parameter, IdColumnName);
             var convert = Expression.Convert(argument, typeof(long));
 
             return Expression.Lambda<Func<T, long>>(convert, parameter);
@@ -174,11 +181,14 @@ namespace EfYou.Filters
 
         private IQueryable<IGrouping<long, List<long>>> ApplyOrderByToResultSet(IQueryable<IGrouping<long, List<long>>> query, List<OrderBy> orderBys)
         {
-            var orderById = orderBys.FirstOrDefault(x => x.ColumnName == "Id");
-
-            if (orderById != null && orderById.Descending)
+            if (orderBys != null)
             {
-                return query.OrderByDescending(x => x.Key);
+                var orderById = orderBys.FirstOrDefault(x => x.ColumnName == IdColumnName);
+
+                if (orderById != null && orderById.Descending)
+                {
+                    return query.OrderByDescending(x => x.Key);
+                }
             }
 
             return query.OrderBy(x => x.Key);

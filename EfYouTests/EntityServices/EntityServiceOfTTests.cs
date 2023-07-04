@@ -85,7 +85,31 @@ namespace EfYouTests.EntityServices
         }
 
         [TestMethod]
-        public void Get_Ids_CallsGetOnPermissionService()
+        public void QueryableGet_CallsGetOnPermissionService()
+        {
+            // Arrange
+
+            // Act
+            _entityService.QueryableGet(_context.Object, new List<dynamic> { 1 });
+
+            // Assert
+            _permissionService.Verify(x => x.Get());
+        }
+
+        [TestMethod]
+        public void QueryableGet_CallsFilterResultOnCurrentPrincipalOnScopeOfResponsibilityService()
+        {
+            // Arrange
+
+            // Act
+            _entityService.QueryableGet(_context.Object, new List<dynamic> { 1 });
+
+            // Assert
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()));
+        }
+
+        [TestMethod]
+        public void Get_CallsGetOnPermissionService()
         {
             // Arrange
 
