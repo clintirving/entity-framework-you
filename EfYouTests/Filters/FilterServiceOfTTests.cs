@@ -136,15 +136,22 @@ namespace EfYouTests.Filters
             var filterService = new Mock<FilterService<DummyParent>> { CallBase = true };
 
             var mockDbSet = new Mock<DbSet<DummyParent>>();
-
-            mockDbSet.Setup(x => x.Include(It.IsAny<string>()))
-                .Returns<string>(x => mockDbSet.Object);
+            var mockQueryProvider = new Mock<EntityQueryProvider>(new Mock<IQueryCompiler>().Object);
+            var queryableMockDbSet = mockDbSet.As<IQueryable<DummyParent>>();
+            queryableMockDbSet.Setup(x => x.Provider).Returns(mockQueryProvider.Object);
+            queryableMockDbSet.Setup(x => x.Expression).Returns(mockDbSet.Object.AsQueryable().Expression);
+            mockQueryProvider.Setup(x => x.CreateQuery<DummyParent>(It.IsAny<MethodCallExpression>())).Returns(queryableMockDbSet.Object);
 
             // Act
-            filterService.Object.AddIncludes(mockDbSet.Object, new List<string> { "DummyEntity" });
+            filterService.Object.AddIncludes(queryableMockDbSet.Object, new List<string> { "DummyEntity" });
 
             // Assert
-            mockDbSet.Verify(mock => mock.Include("DummyEntity"), Times.Once);
+            mockQueryProvider.Verify(mock =>
+                    mock.CreateQuery<DummyParent>(It.Is<MethodCallExpression>(y =>
+                        y.Arguments[0] == queryableMockDbSet.Object.Expression &&
+                        y.Arguments[1] is ConstantExpression &&
+                        (y.Arguments[1] as ConstantExpression).Value.ToString() == "DummyEntity"))
+                , Times.Once);
         }
 
         [TestMethod]
@@ -158,14 +165,24 @@ namespace EfYouTests.Filters
             var queryableMockDbSet = mockDbSet.As<IQueryable<DummyParent>>();
             queryableMockDbSet.Setup(x => x.Provider).Returns(mockQueryProvider.Object);
             queryableMockDbSet.Setup(x => x.Expression).Returns(mockDbSet.Object.AsQueryable().Expression);
-//            mockQueryProvider.Setup(x => x.CreateQuery(It.IsAny<MethodCallExpression>())).Returns(queryableMockDbSet.Object);
+            mockQueryProvider.Setup(x => x.CreateQuery<DummyParent>(It.IsAny<MethodCallExpression>())).Returns(queryableMockDbSet.Object);
 
             // Act
             filterService.Object.AddIncludes(queryableMockDbSet.Object, new List<string> { "DummyEntity", "DummyEntity.DummyChild" });
 
             // Assert
-            mockQueryProvider.Verify(mock => mock.CreateQuery<DummyParent>(It.IsAny<MethodCallExpression>()), Times.Once);
-            mockQueryProvider.Verify(mock => mock.CreateQuery<DummyParent>(It.Is<MethodCallExpression>(y => y.Arguments[1] == Expression.Constant("DummyEntity"))), Times.Once);
+            mockQueryProvider.Verify(mock => 
+                mock.CreateQuery<DummyParent>(It.Is<MethodCallExpression>(y => 
+                    y.Arguments[0] == queryableMockDbSet.Object.Expression && 
+                    y.Arguments[1] is ConstantExpression && 
+                    (y.Arguments[1] as ConstantExpression).Value.ToString() == "DummyEntity"))
+                , Times.Once);
+            mockQueryProvider.Verify(mock =>
+                    mock.CreateQuery<DummyParent>(It.Is<MethodCallExpression>(y =>
+                        y.Arguments[0] == queryableMockDbSet.Object.Expression &&
+                        y.Arguments[1] is ConstantExpression &&
+                        (y.Arguments[1] as ConstantExpression).Value.ToString() == "DummyEntity.DummyChild"))
+                , Times.Once);
         }
 
         [TestMethod]

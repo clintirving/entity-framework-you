@@ -740,7 +740,7 @@ namespace EfYouTests.EntityServices
         }
 
         [TestMethod]
-        public void Delete_ListOfIds_CallsSaveChangesOnDataContext()
+        public void Delete_ListOfIdsNoBulkDelete_CallsSaveChangesOnDataContext()
         {
             // Arrange
             var entities = new List<DummyEntity>
@@ -752,6 +752,8 @@ namespace EfYouTests.EntityServices
             SetMockData(entities);
             _filterService.Setup(x => x.FilterResultsOnGet(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<dynamic>>()))
                 .Returns<IQueryable<DummyEntity>, List<dynamic>>((x, y) => x.Where(z => accessibleIds.Contains(z.Id)));
+
+            _entityService.UseBulkDelete = false;
 
             // Act
             _entityService.Delete(new List<dynamic> {3, 4});

@@ -44,7 +44,7 @@ namespace EfYou.EntityServices
         /// <summary>
         /// If True DELETE skips Audit regardless of whether AuditMe is specified on the Entity and deletes directly in the DB with a SQL Command.
         /// </summary>
-        public virtual bool UseBulkDelete { get; }
+        public virtual bool UseBulkDelete { get; set; }
 
         public virtual List<T> Get(List<dynamic> ids)
         {
@@ -208,7 +208,7 @@ namespace EfYou.EntityServices
                 var dbSet = context.Set<T>();
                 dbSet.AddRange(entitiesToAdd);
 
-                context.SaveChanges(true);
+                context.SaveChanges();
  
             }
 
@@ -259,7 +259,7 @@ namespace EfYou.EntityServices
                     context.SetState(entity, EntityState.Modified);
                 }
 
-                context.SaveChanges(true);
+                context.SaveChanges();
             }
         }
 
@@ -345,7 +345,7 @@ namespace EfYou.EntityServices
                     context.SetState(entityToDelete, EntityState.Deleted);
                 } 
                 
-                context.SaveChanges(true);
+                context.SaveChanges();
             }
         }
 
