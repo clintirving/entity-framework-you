@@ -7,16 +7,18 @@
 // // -----------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace EfYou.Model.FilterExtensions
 {
-    public class CollectionContains<T> : Collection<T>
+    public class ListContains<T> : List<T>
     {
-        public CollectionContains()
+        public ListContains()
             : base() { }
 
-        public CollectionContains(IList<T> list)
-            : base(list) {}
+        public ListContains(int capacity)
+            : base(capacity) { }
+
+        public ListContains(IEnumerable<T> collection)
+            : base(collection) { }
     }
 }

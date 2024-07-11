@@ -7,6 +7,7 @@
 // // -----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
+using EfYou.DatabaseContext;
 using EfYou.Extensions;
 using EfYou.Model.Attributes;
 using EfYou.Model.FilterExtensions;
@@ -26,17 +28,19 @@ namespace EfYou.Filters
         private const string OrderByDescending = " DESCENDING";
         private const string OrderBySeparator = ", ";
 
-        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids)
+        public virtual string IdColumnName => "Id";
+
+        public IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids, IContext context)
         {
-            return FilterResultsOnIdsFilter(query, ids);
+            return FilterResultsOnIdsFilter(query, ids, context);
         }
         
-        public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter)
+        public IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter, IContext context)
         {
-            return AutoFilter(query, filter);
+            return AutoFilter(query, filter, context);
         }
 
-        public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes)
+        public virtual IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes, IContext context)
         {
             if (includes != null)
             {
@@ -52,7 +56,7 @@ namespace EfYou.Filters
             return query;
         }
 
-        public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys)
+        public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context)
         {
             if (orderBys != null && orderBys.Count != 0)
             {
@@ -64,7 +68,7 @@ namespace EfYou.Filters
             return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
         }
 
-        public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging)
+        public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context)
         {
             if (paging != null)
             {
@@ -87,6 +91,11 @@ namespace EfYou.Filters
         public virtual IQueryable<IGrouping<long, List<long>>> AddAggregationFilter(IQueryable<T> query, List<string> groupBys, Paging paging,
             List<OrderBy> orderBys)
         {
+            if (groupBys == null || groupBys.Count == 0)
+            {
+                throw new ArgumentException("Argument groupBys cannot be null or Empty when attempting an aggregation operation");
+            }
+
             var groupByType = CreateAnonymousType(groupBys);
             var groupByTypeConstructor = groupByType.GetConstructors().First();
             var groupByTypeProperties = groupByType.GetProperties();
@@ -100,7 +109,7 @@ namespace EfYou.Filters
             return pagedQuery;
         }
 
-        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids)
+        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids, IContext context)
         {
             var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
 
@@ -156,7 +165,7 @@ namespace EfYou.Filters
         private Expression<Func<T, long>> CreateResultSelectorFunctionForGroupBy()
         {
             var parameter = Expression.Parameter(typeof(T), "x");
-            var argument = Expression.PropertyOrField(parameter, "Id");
+            var argument = Expression.PropertyOrField(parameter, IdColumnName);
             var convert = Expression.Convert(argument, typeof(long));
 
             return Expression.Lambda<Func<T, long>>(convert, parameter);
@@ -172,17 +181,20 @@ namespace EfYou.Filters
 
         private IQueryable<IGrouping<long, List<long>>> ApplyOrderByToResultSet(IQueryable<IGrouping<long, List<long>>> query, List<OrderBy> orderBys)
         {
-            var orderById = orderBys.FirstOrDefault(x => x.ColumnName == "Id");
-
-            if (orderById != null && orderById.Descending)
+            if (orderBys != null)
             {
-                return query.OrderByDescending(x => x.Key);
+                var orderById = orderBys.FirstOrDefault(x => x.ColumnName == IdColumnName);
+
+                if (orderById != null && orderById.Descending)
+                {
+                    return query.OrderByDescending(x => x.Key);
+                }
             }
 
             return query.OrderBy(x => x.Key);
         }
 
-        public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter)
+        public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter, IContext context)
         {
             var filterType = filter.GetType();
 
@@ -196,9 +208,13 @@ namespace EfYou.Filters
                 {
                     query = AddNumericFilterToQuery(query, filter, filterProperty);
                 }
-                else if (propertyType.IsDateType())
+                else if (propertyType.IsDateTimeType())
                 {
-                    query = AddDateFilterToQuery(query, filter, filterProperty);
+                    query = AddDateTimeFilterToQuery(query, filter, filterProperty);
+                }
+                else if (propertyType.IsDateTimeOffsetType())
+                {
+                    query = AddDateTimeOffsetFilterToQuery(query, filter, filterProperty);
                 }
                 else if (propertyType.IsStringType())
                 {
@@ -233,22 +249,31 @@ namespace EfYou.Filters
 
                     if (filterExtensionAttribute?.AppliedToProperty != null)
                     {
-                        if (filterExtensionProperty.PropertyType == typeof(DateTimeRange))
+                        if (typeof(DateTimeRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddDateTimeRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
-                        else if (filterExtensionProperty.PropertyType == typeof(NumberRange))
+                        if (typeof(DateTimeOffsetRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
+                        {
+                            query = AddDateTimeOffsetRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
+                        }
+                        else if (typeof(NumberRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddNumberRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
-                        else if (filterExtensionProperty.PropertyType == typeof(TimeSpanRange))
+                        else if (typeof(TimeSpanRange).IsAssignableFrom(filterExtensionProperty.PropertyType))
                         {
                             query = AddTimeSpanRangeToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
                         else if (filterExtensionProperty.PropertyType.IsGenericType &&
                                  filterExtensionProperty.PropertyType.GetGenericTypeDefinition() == typeof(CollectionContains<>))
                         {
-                            query = AddCollectionContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
+                                query = AddCollectionContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
+                        }
+                        else if (filterExtensionProperty.PropertyType.IsGenericType &&
+                                 filterExtensionProperty.PropertyType.GetGenericTypeDefinition() == typeof(ListContains<>))
+                        {
+                            query = AddListContainsToQuery(query, filter, currentFilterProperty, filterExtensionAttribute);
                         }
                     }
 
@@ -262,9 +287,25 @@ namespace EfYou.Filters
         private IQueryable<T> AddCollectionContainsToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
             FilterExtensionsAttribute filterExtensionAttribute)
         {
-            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+            var collection = (ICollection)currentFilterProperty;
+            if (collection != null && collection.Count > 0)
+            {
+                var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+                query = ApplyCollectionContains(query, property, currentFilterProperty);
+            }
 
-            query = ApplyCollectionContains(query, property, currentFilterProperty);
+            return query;
+        }
+
+        private IQueryable<T> AddListContainsToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
+            FilterExtensionsAttribute filterExtensionAttribute)
+        {
+            var list = (IList)currentFilterProperty;
+            if (list != null && list.Count > 0)
+            {
+                var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+                query = ApplyListContains(query, property, currentFilterProperty);
+            }
 
             return query;
         }
@@ -361,6 +402,29 @@ namespace EfYou.Filters
             return query;
         }
 
+        private IQueryable<T> AddDateTimeOffsetRangeToQuery(IQueryable<T> query, T filter, object currentFilterProperty,
+            FilterExtensionsAttribute filterExtensionAttribute)
+        {
+            var dateTimeOffsetRange = (DateTimeOffsetRange)currentFilterProperty;
+
+            var property = filter.GetType().GetProperty(filterExtensionAttribute.AppliedToProperty);
+
+            if (property.PropertyType.IsNullableType())
+            {
+                query = ApplyGreaterThanOrEqualFilterToQuery(query, property,
+                    Convert.ChangeType(dateTimeOffsetRange.After, Nullable.GetUnderlyingType(property.PropertyType)));
+                query = ApplyLessThanOrEqualFilterToQuery(query, property,
+                    Convert.ChangeType(dateTimeOffsetRange.Before, Nullable.GetUnderlyingType(property.PropertyType)));
+            }
+            else
+            {
+                query = ApplyGreaterThanOrEqualFilterToQuery(query, property, dateTimeOffsetRange.After);
+                query = ApplyLessThanOrEqualFilterToQuery(query, property, dateTimeOffsetRange.Before);
+            }
+
+            return query;
+        }
+
         private IQueryable<T> AddFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
         {
             var propertyValue = filterProperty.GetValue(filter);
@@ -412,10 +476,21 @@ namespace EfYou.Filters
             return query;
         }
 
-        private IQueryable<T> AddDateFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
+        private IQueryable<T> AddDateTimeFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
         {
             var propertyValue = filterProperty.GetValue(filter);
             if (Convert.ToDateTime(propertyValue) != DateTime.MinValue)
+            {
+                query = ApplyEqualityFilterToQuery(query, filterProperty, propertyValue);
+            }
+
+            return query;
+        }
+
+        private IQueryable<T> AddDateTimeOffsetFilterToQuery(IQueryable<T> query, T filter, PropertyInfo filterProperty)
+        {
+            var propertyValue = filterProperty.GetValue(filter);
+            if ((DateTimeOffset)propertyValue != DateTimeOffset.MinValue)
             {
                 query = ApplyEqualityFilterToQuery(query, filterProperty, propertyValue);
             }
@@ -526,6 +601,18 @@ namespace EfYou.Filters
             query = query.Where(lambda);
             return query;
         }
+
+        private IQueryable<T> ApplyListContains(IQueryable<T> query, PropertyInfo filterProperty, object propertyValue)
+        {
+            var e = Expression.Parameter(typeof(T), "e");
+            var m = Expression.MakeMemberAccess(e, filterProperty);
+            var genericCollectionOfPropertyType = typeof(List<>).MakeGenericType(filterProperty.PropertyType);
+            var c = Expression.Constant(propertyValue, genericCollectionOfPropertyType);
+            var condition = Expression.Call(c, genericCollectionOfPropertyType.GetMethod("Contains"), m);
+            var lambda = Expression.Lambda<Func<T, bool>>(condition, e);
+            query = query.Where(lambda);
+            return query;
+        }
     }
 
     public static class FilterServiceExtensions
@@ -576,9 +663,14 @@ namespace EfYou.Filters
             return Type.GetTypeCode(type) == TypeCode.String;
         }
 
-        public static bool IsDateType(this Type type)
+        public static bool IsDateTimeType(this Type type)
         {
             return Type.GetTypeCode(type) == TypeCode.DateTime;
+        }
+
+        public static bool IsDateTimeOffsetType(this Type type)
+        {
+            return type == typeof(DateTimeOffset);
         }
     }
 }

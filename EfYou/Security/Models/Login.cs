@@ -32,6 +32,8 @@ namespace EfYou.Security.Models
         [DbRequired(AllowEmptyStrings = true)]
         public string MobileNumber { get; set; }
 
+        [XmlIgnore] public virtual List<LoginSuccess> LoginSuccesses { get; set; }
+
         [XmlIgnore] public virtual LoginReset LoginReset { get; set; }
 
         [NotMapped] public List<string> Roles { get; set; }
