@@ -12,6 +12,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
+using System.Threading.Tasks;
 using EfYou.Extensions;
 using EfYou.Model.Attributes;
 using EfYou.Model.Enumerations;
@@ -53,6 +54,20 @@ namespace EfYou.DatabaseContext
             var originalStates = changedEntities.Select(x => x.State).ToList();
 
             var result = base.SaveChanges();
+
+            SaveAudit(changedEntities, originalStates);
+
+            return result;
+        }
+
+        public override async Task<int> SaveChangesAsync()
+        {
+            ChangeTracker.DetectChanges();
+
+            var changedEntities = ChangeTracker.Entries().ToList();
+            var originalStates = changedEntities.Select(x => x.State).ToList();
+
+            var result = await base.SaveChangesAsync();
 
             SaveAudit(changedEntities, originalStates);
 
