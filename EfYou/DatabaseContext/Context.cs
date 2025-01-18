@@ -75,14 +75,14 @@ namespace EfYou.DatabaseContext
         }
 
 
-        public override async Task<int> SaveChangesAsync()
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             ChangeTracker.DetectChanges();
 
             var changedEntities = ChangeTracker.Entries().ToList();
             var originalStates = changedEntities.Select(x => x.State).ToList();
 
-            var result = await base.SaveChangesAsync();
+            var result = await base.SaveChangesAsync(cancellationToken);
 
             SaveAudit(changedEntities, originalStates);
 
