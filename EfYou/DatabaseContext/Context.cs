@@ -75,6 +75,20 @@ namespace EfYou.DatabaseContext
         }
 
 
+        public override async Task<int> SaveChangesAsync()
+        {
+            ChangeTracker.DetectChanges();
+
+            var changedEntities = ChangeTracker.Entries().ToList();
+            var originalStates = changedEntities.Select(x => x.State).ToList();
+
+            var result = await base.SaveChangesAsync();
+
+            SaveAudit(changedEntities, originalStates);
+
+            return result;
+        }
+
         public void SetState(object entity, EntityState state)
         {
             Entry(entity).State = state;
