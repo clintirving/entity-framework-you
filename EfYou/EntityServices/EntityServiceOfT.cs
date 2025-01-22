@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Transactions;
 using EfYou.CascadeDelete;
 using EfYou.DatabaseContext;
 using EfYou.Extensions;
@@ -294,15 +295,20 @@ namespace EfYou.EntityServices
 
             if (entitiesToDelete.Count != 0)
             {
-                _cascadeDeletionService.CascadeDelete(entitiesToDelete.GetIdsFromEntities());
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    _cascadeDeletionService.CascadeDelete(entitiesToDelete.GetIdsFromEntities());
 
-                if (UseBulkDelete)
-                {
-                    DeleteUsingBulkDelete(entitiesToDelete);
-                }
-                else
-                {
-                    DeleteUsingEntityFramework(entitiesToDelete);
+                    if (UseBulkDelete)
+                    {
+                        DeleteUsingBulkDelete(entitiesToDelete);
+                    }
+                    else
+                    {
+                        DeleteUsingEntityFramework(entitiesToDelete);
+                    }
+
+                    transaction.Complete();
                 }
             }
         }
