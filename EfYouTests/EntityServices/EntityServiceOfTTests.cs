@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Transactions;
 using EfYou.CascadeDelete;
 using EfYou.DatabaseContext;
 using EfYou.EntityServices;
@@ -725,6 +726,44 @@ namespace EfYouTests.EntityServices
 
             // Assert
             _cascadeDeleteService.Verify(x => x.CascadeDelete(It.Is<List<dynamic>>(y => y.Count == 1)));
+        }
+
+        /// <summary>
+        /// Helpful here: https://stackoverflow.com/a/26361464/2844982
+        /// </summary>
+        [TestMethod]
+        public void Delete_ListOfIds_EverythingIsExecutedInATransaction()
+        {
+            // Arrange
+            Transaction cascadeDeleteTransaction = null;
+            var cascadeDeleteTransactionCommitted = false;
+
+
+            var entities = new List<DummyEntity>
+            {
+                new DummyEntity {Id = 3},
+                new DummyEntity {Id = 4}
+            };
+            var accessibleIds = new List<dynamic> { 3 };
+            SetMockData(entities);
+            _filterService.Setup(x => x.FilterResultsOnGet(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<dynamic>>(), It.IsAny<IContext>()))
+                .Returns<IQueryable<DummyEntity>, List<dynamic>, IContext>((x, y, z) => x.Where(a => accessibleIds.Contains(a.Id)));
+
+            _cascadeDeleteService.Setup(x => x.CascadeDelete(It.IsAny<List<dynamic>>())).Callback(() =>
+            {
+                cascadeDeleteTransaction = Transaction.Current;
+                cascadeDeleteTransaction.TransactionCompleted += (sender, args) =>
+                    cascadeDeleteTransactionCommitted =
+                        args.Transaction.TransactionInformation.Status == TransactionStatus.Committed;
+            });
+
+            // Act
+            _entityService.Delete(new List<dynamic> { 3, 4 });
+
+            // Assert
+            Assert.IsNotNull(cascadeDeleteTransaction);
+            Assert.IsTrue(cascadeDeleteTransactionCommitted);
+
         }
 
         [TestMethod]
