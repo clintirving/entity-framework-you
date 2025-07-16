@@ -33,4 +33,4 @@ jobs:
     - name: Coveralls
       uses: coverallsapp/github-action@v2
       with:
-        path-to-lcov: FeatureFlags/FeatureFlags.Tests/TestResults/coverage.info 
+        path-to-lcov: TestResults/coverage.info 
