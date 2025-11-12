@@ -54,10 +54,10 @@ namespace EfYouTests.EntityServices
                 .Returns<IQueryable<DummyEntity>, DummyEntity, IContext>((x, y, z) => _mockDbSet.Object);
             _filterService.Setup(x => x.AddIncludes(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<string>>(), It.IsAny<IContext>()))
                 .Returns<IQueryable<DummyEntity>, List<string>, IContext>((x, y, z) => x);
-            _filterService.Setup(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<OrderBy>>(), It.IsAny<IContext>(), It.IsAny<Paging>()))
+            _filterService.Setup(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<OrderBy>>(), It.IsAny<IContext>()))
                 .Returns<IQueryable<DummyEntity>, List<OrderBy>, IContext>((x, y, z) => x);
-            _filterService.Setup(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<Paging>(), It.IsAny<IContext>()))
-                .Returns<IQueryable<DummyEntity>, Paging, IContext>((x, y, z) => x);
+            _filterService.Setup(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<Paging>(), It.IsAny<IContext>(), It.IsAny<List<OrderBy>>()))
+                .Returns<IQueryable<DummyEntity>, Paging, IContext, List<OrderBy>>((w, x, y, z) => w);
 
             _cascadeDeleteService = new Mock<ICascadeDeleteService<DummyEntity>>();
 
@@ -179,7 +179,7 @@ namespace EfYouTests.EntityServices
             _entityService.Get(new List<dynamic> {1});
 
             // Assert
-            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<OrderBy>>(), It.IsAny<IContext>(), It.IsAny<Paging>()));
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<OrderBy>>(), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -192,7 +192,7 @@ namespace EfYouTests.EntityServices
             _entityService.Get(new List<dynamic> {1}, null, orderBys);
 
             // Assert
-            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>(), It.IsAny<Paging>()));
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -204,7 +204,7 @@ namespace EfYouTests.EntityServices
             _entityService.Get(new List<dynamic> {1});
 
             // Assert
-            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<Paging>(), It.IsAny<IContext>()));
+            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<Paging>(), It.IsAny<IContext>(), It.IsAny<List<OrderBy>>()));
         }
 
         [TestMethod]
@@ -217,7 +217,7 @@ namespace EfYouTests.EntityServices
             _entityService.Get(new List<dynamic> {1}, null, null, paging);
 
             // Assert
-            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.Is<Paging>(y => y == paging), It.IsAny<IContext>()));
+            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.Is<Paging>(y => y == paging), It.IsAny<IContext>(), It.IsAny<List<OrderBy>>()));
         }
 
         [TestMethod]
@@ -269,7 +269,7 @@ namespace EfYouTests.EntityServices
             _entityService.GetFirst(new List<dynamic> {1}, null, orderBys);
 
             // Assert
-            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>(), It.IsAny<Paging>()));
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -368,7 +368,7 @@ namespace EfYouTests.EntityServices
             _entityService.Search(new List<DummyEntity> {new DummyEntity()});
 
             // Assert
-            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<OrderBy>>(), It.IsAny<IContext>(), It.IsAny<Paging>()));
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<List<OrderBy>>(), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -381,7 +381,7 @@ namespace EfYouTests.EntityServices
             _entityService.Search(new List<DummyEntity> {new DummyEntity()}, null, orderBys);
 
             // Assert
-            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>(), It.IsAny<Paging>()));
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -393,7 +393,7 @@ namespace EfYouTests.EntityServices
             _entityService.Search(new List<DummyEntity> {new DummyEntity()});
 
             // Assert
-            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<Paging>(), It.IsAny<IContext>()));
+            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<Paging>(), It.IsAny<IContext>(), It.IsAny<List<OrderBy>>()));
         }
 
         [TestMethod]
@@ -406,7 +406,7 @@ namespace EfYouTests.EntityServices
             _entityService.Search(new List<DummyEntity> {new DummyEntity()}, null, null, paging);
 
             // Assert
-            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.Is<Paging>(y => y == paging), It.IsAny<IContext>()));
+            _filterService.Verify(x => x.AddPaging(It.IsAny<IQueryable<DummyEntity>>(), It.Is<Paging>(y => y == paging), It.IsAny<IContext>(), It.IsAny<List<OrderBy>>()));
         }
 
         [TestMethod]
@@ -458,7 +458,7 @@ namespace EfYouTests.EntityServices
             _entityService.SearchFirst(new List<DummyEntity> {new DummyEntity()}, null, orderBys);
 
             // Assert
-            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>(), It.IsAny<Paging>()));
+            _filterService.Verify(x => x.AddOrderBys(It.IsAny<IQueryable<DummyEntity>>(), It.Is<List<OrderBy>>(y => y == orderBys), It.IsAny<IContext>()));
         }
 
         [TestMethod]

@@ -115,9 +115,9 @@ namespace EfYou.EntityServices
 
             query = _filterService.AddIncludes(query, includes, context);
 
-            query = _filterService.AddOrderBys(query, orderBys, context, paging);
+            query = _filterService.AddOrderBys(query, orderBys, context);
 
-            query = _filterService.AddPaging(query, paging, context);
+            query = _filterService.AddPaging(query, paging, context, orderBys);
 
             return query;
         }
@@ -399,9 +399,9 @@ namespace EfYou.EntityServices
             {
                 completeQuery = completeQuery.Distinct();
 
-                completeQuery = _filterService.AddOrderBys(completeQuery, orderBys, context, paging);
+                completeQuery = _filterService.AddOrderBys(completeQuery, orderBys, context);
 
-                completeQuery = _filterService.AddPaging(completeQuery, paging, context);
+                completeQuery = _filterService.AddPaging(completeQuery, paging, context, orderBys);
             }
 
             return completeQuery;

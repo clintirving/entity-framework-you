@@ -17,8 +17,8 @@ namespace EfYou.Filters
         IQueryable<T> FilterResultsOnSearch(IQueryable<T> query, T filter, IContext context);
         IQueryable<T> FilterResultsOnGet(IQueryable<T> query, List<dynamic> ids, IContext context);
         IQueryable<T> AddIncludes(IQueryable<T> query, List<string> includes, IContext context);
-        IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context, Paging paging);
-        IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context);
+        IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context);
+        IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context, List<OrderBy> orderBys);
         IQueryable<IGrouping<long, List<long>>> AddPaging(IQueryable<IGrouping<long, List<long>>> query, Paging paging);
         IQueryable<IGrouping<long, List<long>>> AddAggregationFilter(IQueryable<T> query, List<string> groupBys, Paging paging, List<OrderBy> orderBys);
     }

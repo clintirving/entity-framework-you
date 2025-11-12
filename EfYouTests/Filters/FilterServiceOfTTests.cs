@@ -190,10 +190,21 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 }, null);
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 }, null, null);
 
             // Assert
             Assert.AreEqual(5, result.Single().Id);
+        }
+
+        [TestMethod]
+        public void AddPaging_WithAnEmptyArrayOfOrderBys_ThrowsArgumentException()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
+
+            // Act
+            Assert.ThrowsException<ArgumentException>(() => filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 }, null, new List<OrderBy>()));
         }
 
         [TestMethod]
@@ -204,7 +215,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 }, null);
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 }, null, null);
 
             // Assert
             Assert.AreEqual(4, result.Single().Id);
@@ -218,7 +229,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 }, null);
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 }, null, null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
@@ -233,7 +244,7 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 }, new DummyEntity { Id = 4 } }.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddPaging(queryable, null, null);
+            var result = filterService.Object.AddPaging(queryable, null, null, null);
 
             // Assert
             Assert.AreEqual(queryable.Count(), result.Count());
@@ -247,26 +258,11 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> {new DummyEntity {Id = 5}, new DummyEntity {Id = 3}}.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null, null);
+            var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
             Assert.AreEqual(3, result.Last().Id);
-        }
-
-        [TestMethod]
-        public void AddOrderBys_EmptyListOfOrderBysWithPaging_ThrowsArgumentException()
-        {
-            // Arrange
-            var filterService = GetFilterServiceMock();
-            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 } }.AsQueryable();
-
-            // Act
-            Assert.ThrowsException<ArgumentException>(() => filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null, new Paging
-            {
-                Count = 1,
-                Page = 2
-            }));
         }
 
         [TestMethod]
@@ -278,7 +274,7 @@ namespace EfYouTests.Filters
 
             // Act
             var result = filterService.Object.AddOrderBys(queryable,
-                new List<OrderBy> {new OrderBy {ColumnName = "Id"}}, null, null);
+                new List<OrderBy> {new OrderBy {ColumnName = "Id"}}, null);
 
             // Assert
             Assert.AreEqual(3, result.First().Id);
@@ -294,7 +290,7 @@ namespace EfYouTests.Filters
 
             // Act
             var result = filterService.Object.AddOrderBys(queryable,
-                new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}}, null, null);
+                new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}}, null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
@@ -315,7 +311,7 @@ namespace EfYouTests.Filters
                 {
                     new OrderBy {ColumnName = "Name", Descending = true},
                     new OrderBy {ColumnName = "Id"}
-                }, null, null);
+                }, null);
 
             // Assert
             Assert.AreEqual("XYZ", result.First().Name);
