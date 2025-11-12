@@ -240,7 +240,7 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AddOrderBys_EmptyListOfOrderBys_ReturnsQueryableOrderedById()
+        public void AddOrderBys_EmptyListOfOrderBys_ReturnsUnchangedQueryable()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -250,8 +250,8 @@ namespace EfYouTests.Filters
             var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null);
 
             // Assert
-            Assert.AreEqual(3, result.First().Id);
-            Assert.AreEqual(5, result.Last().Id);
+            Assert.AreEqual(5, result.First().Id);
+            Assert.AreEqual(3, result.Last().Id);
         }
 
         [TestMethod]

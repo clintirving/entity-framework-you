@@ -58,14 +58,18 @@ namespace EfYou.Filters
 
         public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context)
         {
-            if (orderBys != null && orderBys.Count != 0)
+            if (orderBys is null)
             {
-                var ordering = string.Join(OrderBySeparator,
-                    orderBys.Select(x => x.Descending ? x.ColumnName + OrderByDescending : x.ColumnName));
-                return query.OrderBy(ordering);
+                return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
             }
 
-            return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
+            if (!orderBys.Any())
+            {
+                return query;
+            }
+            
+            var ordering = string.Join(OrderBySeparator, orderBys.Select(x => x.Descending ? x.ColumnName + OrderByDescending : x.ColumnName));
+            return query.OrderBy(ordering);
         }
 
         public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context)
