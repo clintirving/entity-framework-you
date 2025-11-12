@@ -247,11 +247,26 @@ namespace EfYouTests.Filters
             var queryable = new List<DummyEntity> {new DummyEntity {Id = 5}, new DummyEntity {Id = 3}}.AsQueryable();
 
             // Act
-            var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null);
+            var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null, null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
             Assert.AreEqual(3, result.Last().Id);
+        }
+
+        [TestMethod]
+        public void AddOrderBys_EmptyListOfOrderBysWithPaging_ThrowsArgumentException()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity> { new DummyEntity { Id = 5 }, new DummyEntity { Id = 3 } }.AsQueryable();
+
+            // Act
+            Assert.ThrowsException<ArgumentException>(() => filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null, new Paging
+            {
+                Count = 1,
+                Page = 2
+            }));
         }
 
         [TestMethod]
@@ -263,7 +278,7 @@ namespace EfYouTests.Filters
 
             // Act
             var result = filterService.Object.AddOrderBys(queryable,
-                new List<OrderBy> {new OrderBy {ColumnName = "Id"}}, null);
+                new List<OrderBy> {new OrderBy {ColumnName = "Id"}}, null, null);
 
             // Assert
             Assert.AreEqual(3, result.First().Id);
@@ -279,7 +294,7 @@ namespace EfYouTests.Filters
 
             // Act
             var result = filterService.Object.AddOrderBys(queryable,
-                new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}}, null);
+                new List<OrderBy> {new OrderBy {ColumnName = "Id", Descending = true}}, null, null);
 
             // Assert
             Assert.AreEqual(5, result.First().Id);
@@ -300,7 +315,7 @@ namespace EfYouTests.Filters
                 {
                     new OrderBy {ColumnName = "Name", Descending = true},
                     new OrderBy {ColumnName = "Id"}
-                }, null);
+                }, null, null);
 
             // Assert
             Assert.AreEqual("XYZ", result.First().Name);

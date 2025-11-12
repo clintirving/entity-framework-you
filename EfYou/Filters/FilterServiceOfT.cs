@@ -56,7 +56,7 @@ namespace EfYou.Filters
             return query;
         }
 
-        public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context)
+        public virtual IQueryable<T> AddOrderBys(IQueryable<T> query, List<OrderBy> orderBys, IContext context, Paging paging)
         {
             if (orderBys is null)
             {
@@ -65,7 +65,9 @@ namespace EfYou.Filters
 
             if (!orderBys.Any())
             {
-                return query;
+                return paging is not null 
+                    ? throw new ArgumentException("Argument orderBys cannot be an empty list with paging!") 
+                    : query;
             }
             
             var ordering = string.Join(OrderBySeparator, orderBys.Select(x => x.Descending ? x.ColumnName + OrderByDescending : x.ColumnName));
