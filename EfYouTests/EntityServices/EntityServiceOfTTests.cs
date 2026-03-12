@@ -67,6 +67,8 @@ namespace EfYouTests.EntityServices
             _scopeOfResponsibilityService = new Mock<IScopeOfResponsibilityService<DummyEntity>>();
             _scopeOfResponsibilityService.Setup(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()))
                 .Returns<IQueryable<DummyEntity>>(x => x);
+            _scopeOfResponsibilityService.Setup(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()))
+                .Returns<IQueryable<DummyEntity>, IContext>((x, y) => x);
 
             _entityService = new EntityService<DummyEntity>(_contextFactory.Object, _filterService.Object, _cascadeDeleteService.Object,
                 _permissionService.Object, _scopeOfResponsibilityService.Object);
@@ -106,7 +108,19 @@ namespace EfYouTests.EntityServices
             _entityService.QueryableGet(_context.Object, new List<dynamic> { 1 });
 
             // Assert
-            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()));
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()));
+        }
+
+        [TestMethod]
+        public void QueryableGet_CallsFilterResultOnCurrentPrincipalWithCorrectContext()
+        {
+            // Arrange
+
+            // Act
+            _entityService.QueryableGet(_context.Object, new List<dynamic> { 1 });
+
+            // Assert
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.Is<IContext>(c => c == _context.Object)));
         }
 
         [TestMethod]
@@ -130,7 +144,19 @@ namespace EfYouTests.EntityServices
             _entityService.Get(new List<dynamic> {1});
 
             // Assert
-            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()));
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()));
+        }
+
+        [TestMethod]
+        public void Get_CallsFilterResultOnCurrentPrincipalWithContext()
+        {
+            // Arrange
+
+            // Act
+            _entityService.Get(new List<dynamic> {1});
+
+            // Assert
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -294,7 +320,19 @@ namespace EfYouTests.EntityServices
             _entityService.Search(new List<DummyEntity> {new DummyEntity()});
 
             // Assert
-            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()));
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()));
+        }
+
+        [TestMethod]
+        public void Search_CallsFilterResultOnCurrentPrincipalWithContext()
+        {
+            // Arrange
+
+            // Act
+            _entityService.Search(new List<DummyEntity> {new DummyEntity()});
+
+            // Assert
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()));
         }
 
         [TestMethod]
@@ -472,7 +510,7 @@ namespace EfYouTests.EntityServices
             _entityService.SearchAggregate(new List<DummyEntity> {new DummyEntity()}, groupBys);
 
             // Assert
-            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()));
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>(), It.IsAny<IContext>()));
         }
 
         [TestMethod]

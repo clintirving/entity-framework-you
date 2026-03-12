@@ -7,6 +7,7 @@
 // // -----------------------------------------------------------------------
 
 using System.Linq;
+using EfYou.DatabaseContext;
 
 namespace EfYou.ScopeOfResponsibility
 {
@@ -15,6 +16,11 @@ namespace EfYou.ScopeOfResponsibility
         public IQueryable<T> FilterResultOnCurrentPrincipal(IQueryable<T> query)
         {
             return query;
+        }
+
+        public IQueryable<T> FilterResultOnCurrentPrincipal(IQueryable<T> query, IContext context)
+        {
+            return FilterResultOnCurrentPrincipal(query);
         }
     }
 }
