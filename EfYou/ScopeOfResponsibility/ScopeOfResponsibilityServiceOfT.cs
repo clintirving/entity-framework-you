@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using EfYou.DatabaseContext;
 using EfYou.Extensions;
 
 namespace EfYou.ScopeOfResponsibility
@@ -34,7 +35,11 @@ namespace EfYou.ScopeOfResponsibility
             return query;
         }
 
-        public abstract bool RestrictScopeOfResponsibilityOnLoginConfiguration(out List<int> ids);
+        public virtual IQueryable<T> FilterResultOnCurrentPrincipal(IQueryable<T> query, IContext context)
+        {
+            return FilterResultOnCurrentPrincipal(query);
+        }
 
+        public abstract bool RestrictScopeOfResponsibilityOnLoginConfiguration(out List<int> ids);
     }
 }
