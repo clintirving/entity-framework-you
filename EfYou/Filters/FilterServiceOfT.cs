@@ -72,11 +72,6 @@ namespace EfYou.Filters
             return query;
         }
 
-        public virtual IQueryable<T> AddOrderByOnPrimaryKey(IQueryable<T> query)
-        {
-            return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
-        }
-
         public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context)
         {
             if (paging != null)
@@ -192,6 +187,11 @@ namespace EfYou.Filters
             }
 
             throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64, Guid");
+        }
+
+        private IQueryable<T> AddOrderByOnPrimaryKey(IQueryable<T> query)
+        {
+            return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
         }
 
         private bool HasOrderByOnSpine(IQueryable<T> query)
