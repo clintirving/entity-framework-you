@@ -27,6 +27,10 @@ namespace EfYou.Filters
     {
         private const string OrderByDescending = " DESCENDING";
         private const string OrderBySeparator = ", ";
+        private const string OrderByMethod = "OrderBy";
+        private const string OrderByDescendingMethod = "OrderByDescending";
+        private const string ThenByMethod = "ThenBy";
+        private const string ThenByDescendingMethod = "ThenByDescending";
 
         public virtual string IdColumnName => "Id";
 
@@ -65,13 +69,18 @@ namespace EfYou.Filters
                 return query.OrderBy(ordering);
             }
 
-            return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
+            return query;
         }
 
         public virtual IQueryable<T> AddPaging(IQueryable<T> query, Paging paging, IContext context)
         {
             if (paging != null)
             {
+                if (!HasOrderByOnSpine(query))
+                {
+                    query = AddOrderByOnPrimaryKey(query);
+                }
+
                 return query.Skip(paging.Count * paging.Page).Take(paging.Count);
             }
 
@@ -107,91 +116,6 @@ namespace EfYou.Filters
             var pagedQuery = AddPaging(orderedQuery, paging);
 
             return pagedQuery;
-        }
-
-        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids, IContext context)
-        {
-            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
-
-            var primaryKeyType = primaryKeyProperty.PropertyType;
-
-            var primaryKeyName = primaryKeyProperty.Name;
-
-            var containsQuery = string.Format("{0} in @0", primaryKeyName);
-
-            if (primaryKeyType == typeof(short))
-            {
-                return query.Where(containsQuery, ids.Select(x => (short)x).ToList());
-            }
-            if (primaryKeyType == typeof(int))
-            {
-                return query.Where(containsQuery, ids.Select(x => (int)x).ToList());
-            }
-            if (primaryKeyType == typeof(long))
-            {
-                return query.Where(containsQuery, ids.Select(x => (long)x).ToList());
-            }
-            if (primaryKeyType == typeof(Guid))
-            {
-                return query.Where(containsQuery, ids.Select(x => (Guid)x).ToList());
-            }
-
-            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64, Guid");
-        }
-
-        private Type CreateAnonymousType(List<string> groupBys)
-        {
-            var anonymousClassService = new AnonymousClassService();
-            var entityProperties = typeof(T).GetProperties().Where(x => groupBys.Contains(x.Name)).ToList();
-
-            return anonymousClassService.CreateAnonymousType(entityProperties);
-        }
-
-        private Expression<Func<T, object>> CreateKeySelectorFunctionForGroupBy(PropertyInfo[] reducedFilterTypeProperties,
-            ConstructorInfo reducedFilterTypeConstructor)
-        {
-            var parameter = Expression.Parameter(typeof(T), "x");
-            var arguments = new List<MemberExpression>();
-
-            foreach (var reducedFilterTypePropertyInfo in reducedFilterTypeProperties)
-            {
-                arguments.Add(Expression.PropertyOrField(parameter, reducedFilterTypePropertyInfo.Name));
-            }
-
-            var function = Expression.New(reducedFilterTypeConstructor, arguments, reducedFilterTypeProperties);
-            return Expression.Lambda<Func<T, object>>(function, parameter);
-        }
-
-        private Expression<Func<T, long>> CreateResultSelectorFunctionForGroupBy()
-        {
-            var parameter = Expression.Parameter(typeof(T), "x");
-            var argument = Expression.PropertyOrField(parameter, IdColumnName);
-            var convert = Expression.Convert(argument, typeof(long));
-
-            return Expression.Lambda<Func<T, long>>(convert, parameter);
-        }
-
-
-        private IQueryable<IGrouping<long, List<long>>> ApplyGroupingToResultSet(IQueryable<T> query, Paging paging,
-            Expression<Func<T, object>> keySelectorLambda, Expression<Func<T, long>> resultSelectorLambda)
-        {
-            var groupedQuery = query.GroupBy(keySelectorLambda, resultSelectorLambda);
-            return groupedQuery.GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList());
-        }
-
-        private IQueryable<IGrouping<long, List<long>>> ApplyOrderByToResultSet(IQueryable<IGrouping<long, List<long>>> query, List<OrderBy> orderBys)
-        {
-            if (orderBys != null)
-            {
-                var orderById = orderBys.FirstOrDefault(x => x.ColumnName == IdColumnName);
-
-                if (orderById != null && orderById.Descending)
-                {
-                    return query.OrderByDescending(x => x.Key);
-                }
-            }
-
-            return query.OrderBy(x => x.Key);
         }
 
         public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter, IContext context)
@@ -233,6 +157,109 @@ namespace EfYou.Filters
             query = AddFilterExtensionsToQuery(query, filter, filterType, filter);
 
             return query;
+        }
+
+        protected virtual IQueryable<T> FilterResultsOnIdsFilter(IQueryable<T> query, List<dynamic> ids, IContext context)
+        {
+            var primaryKeyProperty = typeof(T).GetPrimaryKeyProperty();
+
+            var primaryKeyType = primaryKeyProperty.PropertyType;
+
+            var primaryKeyName = primaryKeyProperty.Name;
+
+            var containsQuery = string.Format("{0} in @0", primaryKeyName);
+
+            if (primaryKeyType == typeof(short))
+            {
+                return query.Where(containsQuery, ids.Select(x => (short)x).ToList());
+            }
+            if (primaryKeyType == typeof(int))
+            {
+                return query.Where(containsQuery, ids.Select(x => (int)x).ToList());
+            }
+            if (primaryKeyType == typeof(long))
+            {
+                return query.Where(containsQuery, ids.Select(x => (long)x).ToList());
+            }
+            if (primaryKeyType == typeof(Guid))
+            {
+                return query.Where(containsQuery, ids.Select(x => (Guid)x).ToList());
+            }
+
+            throw new ApplicationException("To call this method, Primary Key of type T must be one of Int16, Int32, Int64, Guid");
+        }
+
+        private IQueryable<T> AddOrderByOnPrimaryKey(IQueryable<T> query)
+        {
+            return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
+        }
+
+        private bool HasOrderByOnSpine(IQueryable<T> query)
+        {
+            var expression = query.Expression;
+            while (expression is MethodCallExpression methodCall)
+            {
+                if (methodCall.Method.Name is OrderByMethod or OrderByDescendingMethod
+                                            or ThenByMethod or ThenByDescendingMethod)
+                    return true;
+
+                expression = methodCall.Arguments[0];
+            }
+            return false;
+        }
+
+        private Type CreateAnonymousType(List<string> groupBys)
+        {
+            var anonymousClassService = new AnonymousClassService();
+            var entityProperties = typeof(T).GetProperties().Where(x => groupBys.Contains(x.Name)).ToList();
+
+            return anonymousClassService.CreateAnonymousType(entityProperties);
+        }
+
+        private Expression<Func<T, object>> CreateKeySelectorFunctionForGroupBy(PropertyInfo[] reducedFilterTypeProperties,
+            ConstructorInfo reducedFilterTypeConstructor)
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            var arguments = new List<MemberExpression>();
+
+            foreach (var reducedFilterTypePropertyInfo in reducedFilterTypeProperties)
+            {
+                arguments.Add(Expression.PropertyOrField(parameter, reducedFilterTypePropertyInfo.Name));
+            }
+
+            var function = Expression.New(reducedFilterTypeConstructor, arguments, reducedFilterTypeProperties);
+            return Expression.Lambda<Func<T, object>>(function, parameter);
+        }
+
+        private Expression<Func<T, long>> CreateResultSelectorFunctionForGroupBy()
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            var argument = Expression.PropertyOrField(parameter, IdColumnName);
+            var convert = Expression.Convert(argument, typeof(long));
+
+            return Expression.Lambda<Func<T, long>>(convert, parameter);
+        }
+
+        private IQueryable<IGrouping<long, List<long>>> ApplyGroupingToResultSet(IQueryable<T> query, Paging paging,
+            Expression<Func<T, object>> keySelectorLambda, Expression<Func<T, long>> resultSelectorLambda)
+        {
+            var groupedQuery = query.GroupBy(keySelectorLambda, resultSelectorLambda);
+            return groupedQuery.GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList());
+        }
+
+        private IQueryable<IGrouping<long, List<long>>> ApplyOrderByToResultSet(IQueryable<IGrouping<long, List<long>>> query, List<OrderBy> orderBys)
+        {
+            if (orderBys != null)
+            {
+                var orderById = orderBys.FirstOrDefault(x => x.ColumnName == IdColumnName);
+
+                if (orderById != null && orderById.Descending)
+                {
+                    return query.OrderByDescending(x => x.Key);
+                }
+            }
+
+            return query.OrderBy(x => x.Key);
         }
 
         private IQueryable<T> AddFilterExtensionsToQuery(IQueryable<T> query, T filter, Type type, object filterProperty)

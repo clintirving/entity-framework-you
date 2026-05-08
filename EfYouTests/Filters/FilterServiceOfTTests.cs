@@ -183,7 +183,7 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AddPaging_Count1Page0_ReturnsFirstElementOnly()
+        public void AddPaging_Count1Page0_ReturnsFirstElementOnlyOrderedByPrimaryKey()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -193,7 +193,7 @@ namespace EfYouTests.Filters
             var result = filterService.Object.AddPaging(queryable, new Paging { Count = 1, Page = 0 }, null);
 
             // Assert
-            Assert.AreEqual(5, result.Single().Id);
+            Assert.AreEqual(3, result.Single().Id);
         }
 
         [TestMethod]
@@ -207,11 +207,11 @@ namespace EfYouTests.Filters
             var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 1 }, null);
 
             // Assert
-            Assert.AreEqual(4, result.Single().Id);
+            Assert.AreEqual(5, result.Single().Id);
         }
 
         [TestMethod]
-        public void AddPaging_PagingCount2Page0_ReturnsOnlyTheFirstTwoElements()
+        public void AddPaging_PagingCount2Page0_ReturnsTheFirstTwoElementsOnlyOrderedByPrimaryKey()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -221,8 +221,8 @@ namespace EfYouTests.Filters
             var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 }, null);
 
             // Assert
-            Assert.AreEqual(5, result.First().Id);
-            Assert.AreEqual(3, result.Last().Id);
+            Assert.AreEqual(3, result.First().Id);
+            Assert.AreEqual(4, result.Last().Id);
         }
 
         [TestMethod]
@@ -240,7 +240,27 @@ namespace EfYouTests.Filters
         }
 
         [TestMethod]
-        public void AddOrderBys_EmptyListOfOrderBys_ReturnsQueryableOrderedById()
+        public void AddPaging_QueryAlreadyOrderedByNonPrimaryKeyProperty_RespectsExistingOrderWithoutApplyingPrimaryKeyOrder()
+        {
+            // Arrange
+            var filterService = GetFilterServiceMock();
+            var queryable = new List<DummyEntity>
+            {
+                new DummyEntity { Id = 1, Name = "Charlie" },
+                new DummyEntity { Id = 2, Name = "Alice" },
+                new DummyEntity { Id = 3, Name = "Bob" }
+            }.AsQueryable().OrderBy(x => x.Name);
+
+            // Act
+            var result = filterService.Object.AddPaging(queryable, new Paging { Count = 2, Page = 0 }, null);
+
+            // Assert
+            Assert.AreEqual(2, result.First().Id);  // Alice
+            Assert.AreEqual(3, result.Last().Id);   // Bob
+        }
+
+        [TestMethod]
+        public void AddOrderBys_EmptyListOfOrderBys_ReturnsQueryUnmodified()
         {
             // Arrange
             var filterService = GetFilterServiceMock();
@@ -250,8 +270,7 @@ namespace EfYouTests.Filters
             var result = filterService.Object.AddOrderBys(queryable, new List<OrderBy>(), null);
 
             // Assert
-            Assert.AreEqual(3, result.First().Id);
-            Assert.AreEqual(5, result.Last().Id);
+            Assert.AreEqual(queryable, result);
         }
 
         [TestMethod]
