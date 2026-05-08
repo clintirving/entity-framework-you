@@ -27,6 +27,10 @@ namespace EfYou.Filters
     {
         private const string OrderByDescending = " DESCENDING";
         private const string OrderBySeparator = ", ";
+        private const string OrderByMethod = "OrderBy";
+        private const string OrderByDescendingMethod = "OrderByDescending";
+        private const string ThenByMethod = "ThenBy";
+        private const string ThenByDescendingMethod = "ThenByDescending";
 
         public virtual string IdColumnName => "Id";
 
@@ -65,6 +69,11 @@ namespace EfYou.Filters
                 return query.OrderBy(ordering);
             }
 
+            return query;
+        }
+
+        public virtual IQueryable<T> AddOrderByOnPrimaryKey(IQueryable<T> query)
+        {
             return query.OrderBy(typeof(T).GetPrimaryKeyProperty().Name);
         }
 
@@ -72,6 +81,11 @@ namespace EfYou.Filters
         {
             if (paging != null)
             {
+                if (!HasOrderByOnSpine(query))
+                {
+                    query = AddOrderByOnPrimaryKey(query);
+                }
+
                 return query.Skip(paging.Count * paging.Page).Take(paging.Count);
             }
 
@@ -179,21 +193,6 @@ namespace EfYou.Filters
             return groupedQuery.GroupBy(x => x.Max(), x => x.OrderByDescending(y => y).ToList());
         }
 
-        private IQueryable<IGrouping<long, List<long>>> ApplyOrderByToResultSet(IQueryable<IGrouping<long, List<long>>> query, List<OrderBy> orderBys)
-        {
-            if (orderBys != null)
-            {
-                var orderById = orderBys.FirstOrDefault(x => x.ColumnName == IdColumnName);
-
-                if (orderById != null && orderById.Descending)
-                {
-                    return query.OrderByDescending(x => x.Key);
-                }
-            }
-
-            return query.OrderBy(x => x.Key);
-        }
-
         public virtual IQueryable<T> AutoFilter(IQueryable<T> query, T filter, IContext context)
         {
             var filterType = filter.GetType();
@@ -233,6 +232,35 @@ namespace EfYou.Filters
             query = AddFilterExtensionsToQuery(query, filter, filterType, filter);
 
             return query;
+        }
+
+        private bool HasOrderByOnSpine(IQueryable<T> query)
+        {
+            var expression = query.Expression;
+            while (expression is MethodCallExpression methodCall)
+            {
+                if (methodCall.Method.Name is OrderByMethod or OrderByDescendingMethod
+                                            or ThenByMethod or ThenByDescendingMethod)
+                    return true;
+
+                expression = methodCall.Arguments[0];
+            }
+            return false;
+        }
+
+        private IQueryable<IGrouping<long, List<long>>> ApplyOrderByToResultSet(IQueryable<IGrouping<long, List<long>>> query, List<OrderBy> orderBys)
+        {
+            if (orderBys != null)
+            {
+                var orderById = orderBys.FirstOrDefault(x => x.ColumnName == IdColumnName);
+
+                if (orderById != null && orderById.Descending)
+                {
+                    return query.OrderByDescending(x => x.Key);
+                }
+            }
+
+            return query.OrderBy(x => x.Key);
         }
 
         private IQueryable<T> AddFilterExtensionsToQuery(IQueryable<T> query, T filter, Type type, object filterProperty)
