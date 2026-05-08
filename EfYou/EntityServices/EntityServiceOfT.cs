@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Transactions;
 using EfYou.CascadeDelete;
 using EfYou.DatabaseContext;
 using EfYou.Extensions;
@@ -109,7 +110,7 @@ namespace EfYou.EntityServices
 
             IQueryable<T> query = context.Set<T>();
 
-            query = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(query);
+            query = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(query, context);
 
             query = _filterService.FilterResultsOnGet(query, ids, context);
 
@@ -294,15 +295,20 @@ namespace EfYou.EntityServices
 
             if (entitiesToDelete.Count != 0)
             {
-                _cascadeDeletionService.CascadeDelete(entitiesToDelete.GetIdsFromEntities());
+                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    _cascadeDeletionService.CascadeDelete(entitiesToDelete.GetIdsFromEntities());
 
-                if (UseBulkDelete)
-                {
-                    DeleteUsingBulkDelete(entitiesToDelete);
-                }
-                else
-                {
-                    DeleteUsingEntityFramework(entitiesToDelete);
+                    if (UseBulkDelete)
+                    {
+                        DeleteUsingBulkDelete(entitiesToDelete);
+                    }
+                    else
+                    {
+                        DeleteUsingEntityFramework(entitiesToDelete);
+                    }
+
+                    transaction.Complete();
                 }
             }
         }
@@ -386,7 +392,7 @@ namespace EfYou.EntityServices
 
                 queryForFilter = queryForFilter.AsNoTracking();
 
-                queryForFilter = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(queryForFilter);
+                queryForFilter = _scopeOfResponsibilityService.FilterResultOnCurrentPrincipal(queryForFilter, context);
 
                 queryForFilter = _filterService.FilterResultsOnSearch(queryForFilter, filter, context);
 

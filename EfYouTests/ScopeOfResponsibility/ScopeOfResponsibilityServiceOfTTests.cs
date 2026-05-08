@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using EfYou.DatabaseContext;
 using EfYou.ScopeOfResponsibility;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -50,6 +51,59 @@ namespace EfYouTests.ScopeOfResponsibility
 
             // Assert
             Assert.AreEqual(firstEntity, result.Single());
+        }
+
+        [TestMethod]
+        public void FilterResultOnCurrentPrincipalWithContext_UnrestrictedScopeOfResponsibility_ReturnsQueryUnmodified()
+        {
+            // Arrange
+            var ids = new List<int>();
+            var data = new List<DummyEntity> { new DummyEntity(), new DummyEntity() };
+            var query = data.AsQueryable();
+            var context = new Mock<IContext>();
+            _scopeOfResponsibilityService.Setup(x => x.RestrictScopeOfResponsibilityOnLoginConfiguration(out ids)).Returns(false);
+
+            // Act
+            var result = _scopeOfResponsibilityService.Object.FilterResultOnCurrentPrincipal(query, context.Object);
+
+            // Assert
+            Assert.AreEqual(query, result);
+        }
+
+        [TestMethod]
+        public void FilterResultOnCurrentPrincipalWithContext_RestrictedScopeOfResponsibility_ReturnsEntitiesWithMatchingAllowedIds()
+        {
+            // Arrange
+            var ids = new List<int> { 1 };
+            var firstEntity = new DummyEntity { Id = 1 };
+            var secondEntity = new DummyEntity { Id = 2 };
+            var data = new List<DummyEntity> { firstEntity, secondEntity };
+            var query = data.AsQueryable();
+            var context = new Mock<IContext>();
+            _scopeOfResponsibilityService.Setup(x => x.RestrictScopeOfResponsibilityOnLoginConfiguration(out ids)).Returns(true);
+
+            // Act
+            var result = _scopeOfResponsibilityService.Object.FilterResultOnCurrentPrincipal(query, context.Object);
+
+            // Assert
+            Assert.AreEqual(firstEntity, result.Single());
+        }
+
+        [TestMethod]
+        public void FilterResultOnCurrentPrincipalWithContext_CallsOriginalOverload()
+        {
+            // Arrange
+            var ids = new List<int>();
+            var data = new List<DummyEntity> { new DummyEntity() };
+            var query = data.AsQueryable();
+            var context = new Mock<IContext>();
+            _scopeOfResponsibilityService.Setup(x => x.RestrictScopeOfResponsibilityOnLoginConfiguration(out ids)).Returns(false);
+
+            // Act
+            _scopeOfResponsibilityService.Object.FilterResultOnCurrentPrincipal(query, context.Object);
+
+            // Assert
+            _scopeOfResponsibilityService.Verify(x => x.FilterResultOnCurrentPrincipal(It.IsAny<IQueryable<DummyEntity>>()), Times.Once);
         }
     }
 }
